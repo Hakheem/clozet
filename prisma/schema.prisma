@@ -6,26 +6,36 @@ generator client {
   provider = "prisma-client-js"
 }
 
+
 model User {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   name          String
-  email         String
+  email         String   @unique
   emailVerified Boolean
   image         String?
-  createdAt     DateTime
-  updatedAt     DateTime
-  role          String?   @default("USER")
-  sessions      Session[]
-  accounts      Account[]
-  
-  @@unique([email])
+  role          String?  @default("USER")   // "USER" | "SELLER" | "ADMIN"
+  username      String?
+  shopName      String?                      // only for SELLER
+  payoutMethod  String?                      // e.g. "mpesa", "bank" — expand later
+  phoneNumber   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Auth relations (Better Auth)
+  sessions Session[]
+  accounts Account[]
+
+  // Platform relations
+  products Product[]   @relation("SellerProducts")  // products this user has listed (SELLER)
+  orders   Order[]     @relation("BuyerOrders")      // orders this user has placed (USER)
+
   @@map("user")
 }
 
 model Session {
   id        String   @id @default(cuid())
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime
   updatedAt DateTime
   ipAddress String?
@@ -33,7 +43,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@map("session")
 }
 
@@ -66,3 +75,158 @@ model Verification {
 
   @@map("verification")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CATALOGUE MODELS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Top-level product category (e.g. Apparel, Bags, Shoes, Accessories).
+// Managed from admin /content page — CRUD is fully implemented there.
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique   // auto-generated from name, used in URLs
+  description String?
+  image       String?             // display image for category cards on the shop
+  isActive    Boolean   @default(true)
+  position    Int       @default(0)  // display order
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products    Product[]
+
+  @@map("category")
+}
+
+// A product listed by a seller.
+// TODO: add variants (size/colour) as a separate model when needed.
+model Product {
+  id           String     @id @default(cuid())
+  name         String
+  slug         String     @unique
+  description  String?
+  price        Float
+  comparePrice Float?
+  images       String[]
+  stock        Int        @default(0)
+  isActive     Boolean    @default(true)
+  isFeatured   Boolean    @default(false)
+  gender       GenderType @default(UNISEX)   // ← new field
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  sellerId   String
+  seller     User     @relation("SellerProducts", fields: [sellerId], references: [id])
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  orderItems OrderItem[]
+
+  @@map("product")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ORDER MODELS
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum OrderStatus {
+  PENDING     // just placed, awaiting confirmation
+  CONFIRMED   // seller confirmed
+  SHIPPED     // dispatched
+  DELIVERED   // buyer received
+  CANCELLED   // cancelled by buyer or seller
+  REFUNDED    // refund processed
+}
+
+// An order placed by a buyer — may contain items from multiple sellers.
+model Order {
+  id        String      @id @default(cuid())
+  status    OrderStatus @default(PENDING)
+  total     Float                            // sum of all item prices at checkout
+  note      String?                          // buyer note
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  buyerId   String
+  buyer     User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+
+  items     OrderItem[]
+
+  @@map("order")
+}
+
+// A single line item inside an order.
+// Stores price at time of purchase so price changes don't affect history.
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  price     Float   // unit price at time of order
+
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_item")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SITE CONTENT MODELS  (editable from /admin/content)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Key-value store for editable site-wide text content.
+// Admin manages this from the Content page.
+//
+// Reserved keys (seed these on first deploy):
+//   "hero_headline"        → main hero heading
+//   "hero_subtext"         → hero paragraph
+//   "announcement_bar"     → top strip message in the header
+//
+// Add more keys freely — the Content page renders them all.
+model SiteContent {
+  id        String   @id @default(cuid())
+  key       String   @unique   // e.g. "hero_headline"
+  label     String             // human-readable label shown in admin UI
+  value     String             // the actual content
+  updatedAt DateTime @updatedAt
+
+  @@map("site_content")
+}
+
+// Promotional banners shown on the homepage / shop pages.
+// The admin creates exactly two primary banners (position 1 & 2)
+// but the model is flexible for more.
+model Banner {
+  id          String     @id @default(cuid())
+  title       String
+  subtitle    String?
+  buttonText  String?
+  buttonHref  String?
+  image       String?
+  type        BannerType @default(OVERLAY)   // controls which component variant renders
+  isActive    Boolean    @default(true)
+  position    Int        @default(0)          // 1 = left/first, 2 = right/second
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("banner")
+}
+
+enum BannerType {
+  // Left panel: image | right panel: text + button
+  GRID
+
+  // Full-bleed bg image with 50% linear gradient overlay; text sits on overlay half
+  OVERLAY
+}
+
+
+enum GenderType {
+  MEN
+  WOMEN
+  KIDS
+  UNISEX
+}
+

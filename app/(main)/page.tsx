@@ -6,6 +6,7 @@ export default function Home() {
     <>
       <Container className="py-12">
         <Hero/>
+
       </Container>
     </>
   );

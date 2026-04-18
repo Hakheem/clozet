@@ -2,119 +2,166 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* ─────────────────────────────────────────────────────────────
+   LUKUU — Design System
+   Palette: Warm Ink on Warm Linen  (no dark mode)
+   ─────────────────────────────────────────────────────────────
+   Pure silver/black felt cold.  Shifting every stop 1–3 degrees
+   warm — toward cream, taupe, gold — gives the same high-contrast
+   fashion look but with the tactile quality of fine fabric.
+   ───────────────────────────────────────────────────────────── */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-title: var(--font-title);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
+  --color-background:            var(--background);
+  --color-foreground:            var(--foreground);
+  --font-sans:                   var(--font-sans);
+  --font-title:                  var(--font-title);
+  --color-sidebar-ring:          var(--sidebar-ring);
+  --color-sidebar-border:        var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent:        var(--sidebar-accent);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
+  --color-sidebar-primary:       var(--sidebar-primary);
+  --color-sidebar-foreground:    var(--sidebar-foreground);
+  --color-sidebar:               var(--sidebar);
+  --color-chart-5:               var(--chart-5);
+  --color-chart-4:               var(--chart-4);
+  --color-chart-3:               var(--chart-3);
+  --color-chart-2:               var(--chart-2);
+  --color-chart-1:               var(--chart-1);
+  --color-ring:                  var(--ring);
+  --color-input:                 var(--input);
+  --color-border:                var(--border);
+  --color-destructive:           var(--destructive);
+  --color-accent-foreground:     var(--accent-foreground);
+  --color-accent:                var(--accent);
+  --color-muted-foreground:      var(--muted-foreground);
+  --color-muted:                 var(--muted);
+  --color-secondary-foreground:  var(--secondary-foreground);
+  --color-secondary:             var(--secondary);
+  --color-primary-foreground:    var(--primary-foreground);
+  --color-primary:               var(--primary);
+  --color-popover-foreground:    var(--popover-foreground);
+  --color-popover:               var(--popover);
+  --color-card-foreground:       var(--card-foreground);
+  --color-card:                  var(--card);
+  --radius-sm:  calc(var(--radius) * 0.6);
+  --radius-md:  calc(var(--radius) * 0.8);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
-  /* Matte Black & Silver (Industrial/Techwear Streetwear Palette) */
-  --background: oklch(0.98 0 0); /* Icy silver-white background */
-  --foreground: oklch(0.20 0 0); /* Matte Black text */
-  
-  --card: oklch(0.99 0 0); /* Pure white cards for stark contrast */
-  --card-foreground: oklch(0.20 0 0);
-  
-  --popover: oklch(0.99 0 0);
-  --popover-foreground: oklch(0.20 0 0);
-  
-  --primary: oklch(0.20 0 0); /* Matte Black buttons */
-  --primary-foreground: oklch(0.98 0 0); /* Silver-white text on primary */
-  
-  --secondary: oklch(0.90 0 0); /* Metallic Silver buttons/surfaces */
-  --secondary-foreground: oklch(0.20 0 0);
-  
-  --muted: oklch(0.95 0 0); /* Light silver/grey surfaces */
-  --muted-foreground: oklch(0.55 0 0); /* Dark silver text */
-  
-  --accent: oklch(0.90 0 0); /* Metallic Silver accents/hover states */
-  --accent-foreground: oklch(0.20 0 0);
-  
-  --destructive: oklch(0.45 0.15 25); /* Muted, dark urban red */
-  
-  --border: oklch(0.85 0 0); /* Distinct silver borders */
-  --input: oklch(0.85 0 0);
-  --ring: oklch(0.20 0 0); /* Matte Black focus rings */
-  --radius: 0rem; /* Brutalist square edges */
+  /* ── Canvas ───────────────────────────────────────────────── */
+  --background:         oklch(0.975 0.004 80);  /* warm off-white  #F7F5F2 */
+  --foreground:         oklch(0.17  0.008 60);  /* warm near-black #1C1A17 */
 
-  /* Chart colors - Chrome/Monotone scale */
-  --chart-1: oklch(0.20 0 0);
-  --chart-2: oklch(0.40 0 0);
-  --chart-3: oklch(0.60 0 0);
-  --chart-4: oklch(0.80 0 0);
-  --chart-5: oklch(0.90 0 0);
+  /* ── Surfaces ─────────────────────────────────────────────── */
+  --card:               oklch(0.995 0.002 80);  /* almost pure white        */
+  --card-foreground:    oklch(0.17  0.008 60);
 
-  /* Sidebar */
-  --sidebar: oklch(0.98 0 0);
-  --sidebar-foreground: oklch(0.20 0 0);
-  --sidebar-primary: oklch(0.20 0 0);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.90 0 0);
-  --sidebar-accent-foreground: oklch(0.20 0 0);
-  --sidebar-border: oklch(0.85 0 0);
-  --sidebar-ring: oklch(0.20 0 0);
+  --popover:            oklch(0.995 0.002 80);
+  --popover-foreground: oklch(0.17  0.008 60);
+
+  /* ── Brand ────────────────────────────────────────────────── */
+  --primary:            oklch(0.17  0.008 60);  /* warm near-black          */
+  --primary-foreground: oklch(0.975 0.004 80);  /* warm off-white           */
+
+  /* ── Secondary / Muted ────────────────────────────────────── */
+  --secondary:          oklch(0.93  0.005 75);  /* warm light stone #EEE9E3 */
+  --secondary-foreground: oklch(0.17 0.008 60);
+
+  --muted:              oklch(0.93  0.005 75);  /* warm sand                */
+  --muted-foreground:   oklch(0.52  0.006 55);  /* warm taupe   #8A857D     */
+
+  /* ── Gold Accent — the brand thread ──────────────────────── */
+  --accent:             oklch(0.72  0.07  70);  /* warm gold    #BFA47A     */
+  --accent-foreground:  oklch(0.17  0.008 60);
+
+  /* ── State ────────────────────────────────────────────────── */
+  --destructive:        oklch(0.50  0.18  25);  /* dark urban red           */
+  --border:             oklch(0.88  0.005 75);  /* warm stone border #E4E0D9*/
+  --input:              oklch(0.88  0.005 75);
+  --ring:               oklch(0.72  0.07  70);  /* gold focus ring          */
+
+  /* ── Radius — slightly soft, not brutalist, not rounded ──── */
+  --radius: 0.4rem;
+
+  /* ── Chart — warm monotone ───────────────────────────────── */
+  --chart-1: oklch(0.17  0.008 60);
+  --chart-2: oklch(0.72  0.07  70);
+  --chart-3: oklch(0.55  0.004 75);
+  --chart-4: oklch(0.75  0.004 75);
+  --chart-5: oklch(0.90  0.003 75);
+
+  /* ── Admin Sidebar (dark panel) ──────────────────────────── */
+  --sidebar:                    oklch(0.13 0.006 55);   /* #111009 deep warm black */
+  --sidebar-foreground:         oklch(0.93 0.004 80);   /* warm cream */
+  --sidebar-primary:            oklch(0.72 0.07  70);   /* gold */
+  --sidebar-primary-foreground: oklch(0.13 0.006 55);
+  --sidebar-accent:             oklch(0.72 0.07  70);   /* gold hover */
+  --sidebar-accent-foreground:  oklch(0.13 0.006 55);
+  --sidebar-border:             oklch(0.22 0.005 60);   /* subtle warm border */
+  --sidebar-ring:               oklch(0.72 0.07  70);
+
+  /* ── Direct hex aliases (for inline styles) ──────────────── */
+  --gold:         #BFA47A;
+  --gold-muted:   rgba(191,164,122,0.15);
+  --ink:          #1C1A17;
+  --cream:        #F7F5F2;
+  --stone:        #E4E0D9;
+  --taupe:        #8A857D;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Base layer
+   ───────────────────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   html {
     @apply font-sans;
   }
-  .hoverEffect{
-    @apply transition-all ease-in-out duration-300 cursor-pointer
-  }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Utility classes
+   ───────────────────────────────────────────────────────────── */
 .title {
   font-family: var(--font-title), ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: -0.02em;
 }
 
+.hoverEffect {
+  @apply transition-all duration-200 ease-in-out cursor-pointer;
+}
 
+/* Gold accent hairline — used under header, above footer etc. */
+.gold-hairline {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(191,164,122,0.4) 25%,
+    rgba(191,164,122,0.4) 75%,
+    transparent 100%
+  );
+}
 
+/* ─────────────────────────────────────────────────────────────
+   Scrollbar
+   ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: oklch(0.93 0.005 75); }
+::-webkit-scrollbar-thumb { background: oklch(0.88 0.005 75); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: oklch(0.52 0.006 55); }
 

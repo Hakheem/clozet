@@ -20,7 +20,7 @@ const SocialIcons = ({ theme = 'light', className }: SocialIconsProps) => {
     const isDark = theme === 'dark';
 
     return (
-        <div className={cn("flex items-center gap-6", className)}>
+        <div className={cn("flex items-center gap-2", className)}>
             {socials.map((social) => {
                 const Icon = social.icon;
                 return (
@@ -36,11 +36,11 @@ const SocialIcons = ({ theme = 'light', className }: SocialIconsProps) => {
                                 : "text-muted-foreground hover:text-primary"
                         )}
                     >
-                        <Icon className="size-6 transition-opacity opacity-70 duration-200 group-hover:opacity-100" />
+                        <Icon className="size-6 transition-opacity opacity-70 duration-200 group-hover:opacity-90" />
                         <span className={cn(
-                            "text-sm font-medium tracking-wider uppercase",
-                            "opacity-60 group-hover:opacity-100 transition-opacity duration-200",
-                            "md:opacity-100"
+                            "text-xs font-medium uppercase",
+                            "opacity-60 group-hover:opacity-90 transition-opacity duration-200",
+                            "md:opacity-90"
                         )}>
                             {social.name}
                         </span>
