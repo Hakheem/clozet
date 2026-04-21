@@ -11,18 +11,21 @@
 //   lib/actions/products.actions.ts        → all queries live here
 // ─────────────────────────────────────────────────────────────────────────────
 
-import {
+import { 
   getProducts,
   getCategoriesWithCounts,
   type ProductWithCategory,
 } from "@/actions/products";
-import { Package, Plus, Search, SlidersHorizontal, Eye, EyeOff, Star } from "lucide-react";
+import { Package, Plus, Search, SlidersHorizontal, Eye, EyeOff, Star, Layers } from "lucide-react";
 import Link from "next/link";
 import AdminProductToggle from "@/components/admin/AdminProductToggle";
+import DeleteProductButton from "@/components/admin/DeleteProductButton";
+import FilterSelect from "@/components/admin/FilterSelect";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const GENDER_LABELS = { MEN: "Men", WOMEN: "Women", KIDS: "Kids", UNISEX: "Unisex" } as const;
+
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Newest first" },
@@ -37,18 +40,19 @@ const SORT_OPTIONS = [
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: Record<string, string>;
+  searchParams: Promise<Record<string, string>>;
 }) {
-  const page = Number(searchParams.page ?? 1);
+  const awaitedSearchParams = await searchParams;
+  const page = Number(awaitedSearchParams.page ?? 1);
   const pageSize = 20;
 
   const [result, categories] = await Promise.all([
     getProducts({
-      isActive: searchParams.active === "false" ? false : undefined, // undefined = all
-      categorySlug: searchParams.category || undefined,
-      gender: (searchParams.gender as "MEN" | "WOMEN" | "UNISEX") || undefined,
-      search: searchParams.search || undefined,
-      sortBy: (searchParams.sort as any) || "newest",
+      isActive: awaitedSearchParams.active === "true" ? true : (awaitedSearchParams.active === "false" ? false : undefined), // undefined = all
+      categorySlug: awaitedSearchParams.category || undefined,
+      gender: (awaitedSearchParams.gender as "MEN" | "WOMEN" | "UNISEX") || undefined,
+      search: awaitedSearchParams.search || undefined,
+      sortBy: (awaitedSearchParams.sort as any) || "newest",
       page,
       pageSize,
     }),
@@ -59,7 +63,7 @@ export default async function AdminProductsPage({
 
   // Build a URL helper that merges new params into current ones
   function filterUrl(updates: Record<string, string | undefined>) {
-    const params = new URLSearchParams(searchParams as Record<string, string>);
+    const params = new URLSearchParams(awaitedSearchParams as Record<string, string>);
     Object.entries(updates).forEach(([k, v]) => {
       if (v === undefined) params.delete(k);
       else params.set(k, v);
@@ -108,7 +112,7 @@ export default async function AdminProductsPage({
             <form>
               <input
                 name="search"
-                defaultValue={searchParams.search ?? ""}
+                defaultValue={awaitedSearchParams.search ?? ""}
                 placeholder="Search products…"
                 className="w-full h-8 pl-8 pr-3 rounded-lg text-sm outline-none"
                 style={{ background: "#F7F5F2", border: "1px solid #E4E0D9", color: "#1C1A17" }}
@@ -119,8 +123,8 @@ export default async function AdminProductsPage({
           {/* Category filter */}
           <FilterSelect
             label="Category"
-            value={searchParams.category ?? ""}
-            href={(v) => filterUrl({ category: v || undefined })}
+            value={awaitedSearchParams.category ?? ""} 
+            paramKey="category"
             options={[
               { value: "", label: "All categories" },
               ...categories.map((c: { id: string; name: string; slug: string; image: string | null; productCount: number }) => ({ value: c.slug, label: `${c.name} (${c.productCount})` })),
@@ -130,8 +134,8 @@ export default async function AdminProductsPage({
           {/* Gender filter */}
           <FilterSelect
             label="Gender"
-            value={searchParams.gender ?? ""}
-            href={(v) => filterUrl({ gender: v || undefined })}
+            value={awaitedSearchParams.gender ?? ""}
+            paramKey="gender"
             options={[
               { value: "", label: "All genders" },
               { value: "MEN", label: "Men" },
@@ -143,23 +147,23 @@ export default async function AdminProductsPage({
           {/* Sort */}
           <FilterSelect
             label="Sort"
-            value={searchParams.sort ?? "newest"}
-            href={(v) => filterUrl({ sort: v })}
+            value={awaitedSearchParams.sort ?? "newest"}
+            paramKey="sort"
             options={SORT_OPTIONS}
           />
 
           {/* Active toggle */}
-          <Link
-            href={filterUrl({ active: searchParams.active === "false" ? undefined : "false" })}
+           <Link
+            href={filterUrl({ active: awaitedSearchParams.active === "true" ? "false" : (awaitedSearchParams.active === "false" ? undefined : "true") })}
             className="inline-flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs font-medium transition-colors"
             style={{
-              background: searchParams.active === "false" ? "rgba(239,68,68,0.08)" : "#F7F5F2",
+              background: awaitedSearchParams.active === "true" ? "rgba(34,197,94,0.08)" : (awaitedSearchParams.active === "false" ? "rgba(239,68,68,0.08)" : "#F7F5F2"),
               border: "1px solid #E4E0D9",
-              color: searchParams.active === "false" ? "#DC2626" : "#8A857D",
+              color: awaitedSearchParams.active === "true" ? "#16A34A" : (awaitedSearchParams.active === "false" ? "#DC2626" : "#8A857D"),
             }}
           >
-            {searchParams.active === "false" ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-            {searchParams.active === "false" ? "Inactive" : "Active"}
+            {awaitedSearchParams.active === "true" ? <Eye className="w-3 h-3" /> : (awaitedSearchParams.active === "false" ? <EyeOff className="w-3 h-3" /> : <Layers className="w-3 h-3" />)}
+            {awaitedSearchParams.active === "true" ? "Visible" : (awaitedSearchParams.active === "false" ? "Hidden" : "All Status")}
           </Link>
 
           <span className="ml-auto text-xs" style={{ color: "#8A857D" }}>
@@ -169,12 +173,12 @@ export default async function AdminProductsPage({
 
         {/* ── Products table ──────────────────────────────────── */}
         {products.length === 0 ? (
-          <EmptyState hasFilters={Object.keys(searchParams).length > 0} />
+          <EmptyState hasFilters={Object.keys(awaitedSearchParams).length > 0} />
         ) : (
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #E4E0D9" }}>
             {/* Header row */}
             <div
-              className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_80px] gap-4 px-5 py-2.5"
+              className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_120px] gap-4 px-5 py-2.5"
               style={{ background: "#F7F5F2", borderBottom: "1px solid #E4E0D9" }}
             >
               {["Product", "Category", "Gender", "Price", "Stock", ""].map(h => (
@@ -187,7 +191,7 @@ export default async function AdminProductsPage({
             {products.map((p: ProductWithCategory, i: number) => (
               <div
                 key={p.id}
-                className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_80px] gap-4 items-center px-5 py-3.5"
+                className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_120px] gap-4 items-center px-5 py-3.5"
                 style={{
                   background: "#FFFFFF",
                   borderBottom: i < products.length - 1 ? "1px solid #F0EDE8" : "none",
@@ -219,20 +223,30 @@ export default async function AdminProductsPage({
 
                 <span className="text-sm font-medium" style={{ color: "#1C1A17" }}>
                   KES {p.price.toLocaleString()}
+                  {p.discountPrice && (
+                    <span className="block text-[0.65rem] line-through text-[#8A857D]">
+                      KES {p.discountPrice.toLocaleString()}
+                    </span>
+                  )}
                 </span>
 
-                <span className="text-sm" style={{ color: p.stock > 0 ? "#1C1A17" : "#DC2626" }}>
-                  {p.stock}
+                <span className="text-sm font-medium" style={{ color: p.totalStock > 0 ? "#1C1A17" : "#DC2626" }}>
+                  {p.totalStock}
+                  <span className="text-[0.6rem] text-[#8A857D] ml-1 block font-normal">
+                    {p.variants.length} variant(s)
+                  </span>
                 </span>
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
                   <AdminProductToggle productId={p.id} isActive={p.isActive} />
                   <Link href={`/admin/products/${p.id}`}
-                    className="text-xs font-medium transition-colors"
-                    style={{ color: "#BFA47A" }}>
+                    className="p-2 text-[#8A857D] hover:text-[#BFA47A] rounded-lg transition-colors"
+                    title="Edit product"
+                  >
                     Edit
                   </Link>
+                  <DeleteProductButton productId={p.id} productName={p.name} />
                 </div>
               </div>
             ))}
@@ -249,32 +263,6 @@ export default async function AdminProductsPage({
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
-
-function FilterSelect({
-  label, value, href, options,
-}: {
-  label: string;
-  value: string;
-  href: (v: string) => string;
-  options: { value: string; label: string }[];
-}) {
-  return (
-    <div className="relative">
-      <select
-        value={value}
-        className="h-8 pl-3 pr-7 rounded-lg text-xs font-medium appearance-none outline-none"
-        style={{ background: "#F7F5F2", border: "1px solid #E4E0D9", color: "#1C1A17" }}
-        // Note: use a client wrapper or form submit for real interactivity;
-        // for full server-component filtering use Link buttons instead.
-        onChange={() => { }}
-      >
-        {options.map(o => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
 
 function EmptyState({ hasFilters }: { hasFilters: boolean }) {
   return (

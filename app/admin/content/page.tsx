@@ -15,6 +15,8 @@ import {
   Loader2,
   AlertCircle,
   Megaphone,
+  Upload,
+  X,
 } from "lucide-react";
 import {
   getCategories,
@@ -26,8 +28,8 @@ import {
   getBanners,
   upsertBanner,
   deleteBanner,
-  CONTENT_KEYS,
 } from "@/actions/contents";
+import { CONTENT_KEYS } from "@/lib/content-keys";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -116,6 +118,57 @@ const SaveButton = ({ loading, label = "Save" }: { loading: boolean; label?: str
   </button>
 );
 
+const ImageUpload = ({
+  value,
+  onChange,
+  onClear,
+  label = "Upload Image",
+}: {
+  value?: string | null;
+  onChange: (base64: string) => void;
+  onClear: () => void;
+  label?: string;
+}) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File is too large. Max 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      onChange(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="space-y-3">
+      {value ? (
+        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-[#E4E0D9] bg-[#F7F5F2]">
+          <img src={value} alt="Preview" className="w-full h-full object-cover" />
+          <button
+            type="button"
+            onClick={onClear}
+            className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 shadow-sm hover:bg-white transition-colors"
+          >
+            <X className="w-4 h-4 text-[#DC2626]" />
+          </button>
+        </div>
+      ) : (
+        <label className="flex flex-col items-center justify-center w-full aspect-video rounded-lg border-2 border-dashed border-[#E4E0D9] bg-[#F7F5F2] cursor-pointer hover:bg-[#F0EDE8] transition-colors group">
+          <Upload className="w-6 h-6 mb-2 text-[#8A857D] group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-semibold text-[#8A857D]">{label}</span>
+          <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+        </label>
+      )}
+    </div>
+  );
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Tab: Categories
 // ─────────────────────────────────────────────────────────────────────────────
@@ -172,38 +225,44 @@ function CategoriesTab() {
         <h3 className="text-sm font-bold title mb-4" style={{ color: "#1C1A17" }}>
           Add Category
         </h3>
-        <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Field label="Name *">
-            <TextInput
-              placeholder="e.g. Bags"
-              value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-            />
-          </Field>
-          <Field label="Description">
-            <TextInput
-              placeholder="Short description (optional)"
-              value={form.description}
-              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-            />
-          </Field>
-          <Field label="Image URL" hint="Paste a hosted image URL">
-            <TextInput
-              placeholder="https://..."
-              value={form.image}
-              onChange={e => setForm(f => ({ ...f, image: e.target.value }))}
-            />
-          </Field>
-          <div className="md:col-span-3 flex justify-end">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="inline-flex items-center gap-2 px-4 h-9 rounded-lg text-sm font-semibold transition-all duration-150"
-              style={{ background: "#1C1A17", color: "#F7F5F2" }}
-            >
-              {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-              Add Category
-            </button>
+        <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="md:col-span-1">
+            <Field label="Category Image" hint="Clear, high-quality image">
+              <ImageUpload
+                value={form.image}
+                onChange={(val) => setForm((f) => ({ ...f, image: val }))}
+                onClear={() => setForm((f) => ({ ...f, image: "" }))}
+              />
+            </Field>
+          </div>
+          <div className="md:col-span-3 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Name *">
+                <TextInput
+                  placeholder="e.g. Bags"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                />
+              </Field>
+              <Field label="Description">
+                <TextInput
+                  placeholder="Short description (optional)"
+                  value={form.description}
+                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                />
+              </Field>
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isPending}
+                className="inline-flex items-center gap-2 px-6 h-10 rounded-lg text-sm font-semibold transition-all duration-150"
+                style={{ background: "#1C1A17", color: "#F7F5F2" }}
+              >
+                {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                Create Category
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -478,8 +537,12 @@ function BannersTab() {
                 <TextInput value={form.buttonHref ?? ""} onChange={e => setField(pos, "buttonHref", e.target.value)} placeholder="/shop" />
               </Field>
             </div>
-            <Field label="Image URL" hint="Hosted image URL (Cloudinary, Uploadthing, etc.)">
-              <TextInput value={form.image ?? ""} onChange={e => setField(pos, "image", e.target.value)} placeholder="https://..." />
+            <Field label="Banner Image" hint="High resolution, aspect ratio 16:9 recommended">
+              <ImageUpload 
+                value={form.image} 
+                onChange={val => setField(pos, "image", val)} 
+                onClear={() => setField(pos, "image", "")}
+              />
             </Field>
 
             <div className="flex justify-end pt-1">

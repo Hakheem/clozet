@@ -105,7 +105,7 @@ export default function ResetPasswordPage() {
         </div>
         <Link href="/forgot-password">
           <button
-            className="w-full h-11 rounded-lg text-sm font-semibold transition-all duration-200"
+            className="w-full h-11 rounded-md text-sm font-semibold transition-all duration-200"
             style={{
               background: "linear-gradient(135deg, #EDE8DF 0%, #D4C9B5 100%)",
               color: "#080808",
@@ -178,7 +178,7 @@ export default function ResetPasswordPage() {
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
               {...register("password")}
-              className="w-full h-11 px-4 pr-10 rounded-lg text-sm outline-none transition-all duration-200"
+              className="w-full h-11 px-4 pr-10 rounded-md text-sm outline-none transition-all duration-200"
               style={{
                 background: "rgba(255,255,255,0.04)",
                 border: errors.password
@@ -255,7 +255,7 @@ export default function ResetPasswordPage() {
               type={showConfirm ? "text" : "password"}
               placeholder="••••••••"
               {...register("confirmPassword")}
-              className="w-full h-11 px-4 pr-10 rounded-lg text-sm outline-none transition-all duration-200"
+              className="w-full h-11 px-4 pr-10 rounded-md text-sm outline-none transition-all duration-200"
               style={{
                 background: "rgba(255,255,255,0.04)",
                 border: errors.confirmPassword
@@ -295,7 +295,7 @@ export default function ResetPasswordPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-11 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200 group mt-1"
+            className="w-full h-11 rounded-md flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200 group mt-1"
             style={{
               background: isSubmitting
                 ? "rgba(191,164,122,0.4)"

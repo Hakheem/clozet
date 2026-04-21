@@ -23,7 +23,9 @@ interface ExtendedUser {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = useSession();
 
-  if (isPending) {
+  // Optimized: Only show the "Verifying access" screen on initial load
+  // if no session information is currently available in the client cache.
+  if (isPending && !session) {
     return (
       <div
         className="flex items-center justify-center h-screen"
@@ -39,8 +41,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
+  // Once loaded, or if session is already present, verify the session and role.
   if (!session || !session.user || (session.user as ExtendedUser).role !== "ADMIN") {
-    redirect("/login");
+    // If not pending and not authorized, redirect.
+    if (!isPending) {
+        redirect("/login");
+    }
+    // Return null while redirecting to avoid flickering unauthorized content
+    return null;
   }
 
   return (

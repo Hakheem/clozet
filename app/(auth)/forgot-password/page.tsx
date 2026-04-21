@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
 
         <Link href="/login">
           <button
-            className="w-full h-11 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200 group"
+            className="w-full h-11 rounded-md flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200 group"
             style={{
               background: "linear-gradient(135deg, #EDE8DF 0%, #D4C9B5 100%)",
               color: "#080808",
@@ -127,7 +127,7 @@ export default function ForgotPasswordPage() {
             type="email"
             placeholder="name@example.com"
             {...register("email")}
-            className="w-full h-11 px-4 rounded-lg text-sm outline-none transition-all duration-200"
+            className="w-full h-11 px-4 rounded-md text-sm outline-none transition-all duration-200"
             style={{
               background: "rgba(255,255,255,0.04)",
               border: errors.email ? "1px solid rgba(255,100,100,0.5)" : "1px solid rgba(255,255,255,0.08)",
@@ -145,7 +145,7 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-11 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200 group mt-1"
+            className="w-full h-11 rounded-md flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200 group mt-1"
             style={{
               background: isSubmitting ? "rgba(191,164,122,0.4)" : "linear-gradient(135deg, #EDE8DF 0%, #D4C9B5 100%)",
               color: "#080808",

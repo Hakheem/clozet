@@ -1,19 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// FILE: app/(shop)/shop/page.tsx
-//
-// Main public shop page — shows all active products.
-// Filters, sort and pagination are driven by URL searchParams so:
-//   • the page is fully server-rendered (SEO friendly)
-//   • sharing a URL preserves the exact filter state
-//
-// URL shape:
-//   /shop?category=shoes&gender=WOMEN&sort=price_asc&page=2&search=leather
-//
-// Related files:
-//   app/(shop)/shop/[category]/page.tsx    → category-scoped shop
-//   lib/actions/products.actions.ts        → getProducts(), getCategoriesWithCounts()
-//   components/shop/ProductCard.tsx        → card UI
-// ─────────────────────────────────────────────────────────────────────────────
 
 import {
   getProducts,
@@ -24,6 +8,7 @@ import ShopFilters from "@/components/shop/ShopFilters";
 import { SlidersHorizontal, PackageSearch } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import Container from "@/components/layout/Container";
 
 
 export const metadata: Metadata = {
@@ -36,18 +21,19 @@ const PAGE_SIZE = 24;
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Record<string, string>;
+  searchParams: Promise<Record<string, string>>;
 }) {
-  const page = Number(searchParams.page ?? 1);
+  const awaitedSearchParams = await searchParams;
+  const page = Number(awaitedSearchParams.page ?? 1);
 
   const [result, categories] = await Promise.all([
     getProducts({
-      categorySlug: searchParams.category  || undefined,
-      gender:       (searchParams.gender as any) || undefined,
-      search:       searchParams.search    || undefined,
-      sortBy:       (searchParams.sort as any)   || "newest",
-      minPrice:     searchParams.min ? Number(searchParams.min) : undefined,
-      maxPrice:     searchParams.max ? Number(searchParams.max) : undefined,
+      categorySlug: awaitedSearchParams.category  || undefined,
+      gender:       (awaitedSearchParams.gender as any) || undefined,
+      search:       awaitedSearchParams.search    || undefined,
+      sortBy:       (awaitedSearchParams.sort as any)   || "featured",
+      minPrice:     awaitedSearchParams.min ? Number(awaitedSearchParams.min) : undefined,
+      maxPrice:     awaitedSearchParams.max ? Number(awaitedSearchParams.max) : undefined,
       page,
       pageSize: PAGE_SIZE,
     }),
@@ -57,13 +43,13 @@ export default async function ShopPage({
   const { products, total, totalPages } = result;
 
   const hasActiveFilters = !!(
-    searchParams.category || searchParams.gender ||
-    searchParams.search   || searchParams.min    || searchParams.max
+    awaitedSearchParams.category || awaitedSearchParams.gender ||
+    awaitedSearchParams.search   || awaitedSearchParams.min    || awaitedSearchParams.max
   );
 
   // Canonical URL builder for pagination / filter links
   function makeUrl(updates: Record<string, string | undefined>) {
-    const p = new URLSearchParams(searchParams as Record<string, string>);
+    const p = new URLSearchParams(awaitedSearchParams as Record<string, string>);
     Object.entries(updates).forEach(([k, v]) => {
       if (v === undefined) p.delete(k); else p.set(k, v);
     });
@@ -72,6 +58,7 @@ export default async function ShopPage({
   }
 
   return (
+<Container>
     <div style={{ background: "#F7F5F2", minHeight: "100vh" }}>
 
       {/* ── Page header ──────────────────────────────────────── */}
@@ -100,7 +87,7 @@ export default async function ShopPage({
         {/* ── Filter sidebar ───────────────────────────────────── */}
         <ShopFilters
           categories={categories}
-          searchParams={searchParams}
+          searchParams={awaitedSearchParams}
           makeUrl={makeUrl}
         />
 
@@ -111,14 +98,14 @@ export default async function ShopPage({
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             {/* Active filter chips */}
             <div className="flex flex-wrap items-center gap-2">
-              {searchParams.category && (
-                <FilterChip label={`Category: ${searchParams.category}`} href={makeUrl({ category: undefined })} />
+              {awaitedSearchParams.category && (
+                <FilterChip label={`Category: ${awaitedSearchParams.category}`} href={makeUrl({ category: undefined })} />
               )}
-              {searchParams.gender && (
-                <FilterChip label={`Gender: ${searchParams.gender}`} href={makeUrl({ gender: undefined })} />
+              {awaitedSearchParams.gender && (
+                <FilterChip label={`Gender: ${awaitedSearchParams.gender}`} href={makeUrl({ gender: undefined })} />
               )}
-              {searchParams.search && (
-                <FilterChip label={`"${searchParams.search}"`} href={makeUrl({ search: undefined })} />
+              {awaitedSearchParams.search && (
+                <FilterChip label={`"${awaitedSearchParams.search}"`} href={makeUrl({ search: undefined })} />
               )}
               {hasActiveFilters && (
                 <Link href="/shop" className="text-xs underline" style={{ color: "#8A857D" }}>
@@ -128,7 +115,7 @@ export default async function ShopPage({
             </div>
 
             {/* Sort select */}
-            <SortSelect value={searchParams.sort ?? "newest"} makeUrl={makeUrl} />
+            <SortSelect value={awaitedSearchParams.sort ?? "newest"} makeUrl={makeUrl} />
           </div>
 
           {products.length === 0 ? (
@@ -163,10 +150,12 @@ export default async function ShopPage({
         </main>
       </div>
     </div>
+
+</Container>
   );
 }
 
-// ─── Small helpers ────────────────────────────────────────────────────────────
+// ─── Small helpers 
 
 function FilterChip({ label, href }: { label: string; href: string }) {
   return (

@@ -38,6 +38,35 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
+      onboarded: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+      },
+      bio: {
+        type: "string",
+        required: false,
+      },
+      location: {
+        type: "string",
+        required: false,
+      },
+      instagram: {
+        type: "string",
+        required: false,
+      },
+      facebook: {
+        type: "string",
+        required: false,
+      },
+      tiktok: {
+        type: "string",
+        required: false,
+      },
+      payoutDetails: {
+        type: "string",
+        required: false,
+      },
     },
   },
 });

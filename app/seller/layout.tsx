@@ -2,37 +2,64 @@
 
 import SellerSidebar from "@/components/layout/SellerSidebar";
 import { useSession } from "@/lib/auth-client";
-import { redirect } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 
 export default function SellerLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const { data: session, isPending } = useSession();
+  const pathname = usePathname();
+  const { data: session, isPending } = useSession();
+  
+  const isOnboarding = pathname === "/seller/onboarding";
 
-    if (isPending) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900 mx-auto mb-4"></div>
-                    <p className="text-zinc-600">Loading...</p>
-                </div>
-            </div>
-        );
-    }
+  if (isPending && !session) {
+    return (
+      <div
+        className="flex items-center justify-center h-screen"
+        style={{ background: "#F7F5F2" }}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#BFA47A]"></div>
+          <p className="text-sm font-medium" style={{ color: "#8A857D" }}>
+            Preparing your dashboard…
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-    if (!session || session.user.role !== "SELLER") {
+  if (!session || (session.user as any).role !== "SELLER") {
+    if (!isPending) {
         redirect("/login");
     }
+    return null;
+  }
 
-    return (
-        <div className="flex">
-            <SellerSidebar
-                shopName={session.user.shopName || "My Shop"}
-                ownerName={session.user.name || "Owner"}
-            />
-            <div className="flex-1 bg-zinc-50">{children}</div>
-        </div>
-    );
+  // Enforce onboarding if not complete
+  if (!(session.user as any).onboarded && !isOnboarding) {
+    redirect("/seller/onboarding");
+    return null;
+  }
+
+  // If already onboarded, don't allow visiting the onboarding page again
+  if ((session.user as any).onboarded && isOnboarding) {
+    redirect("/seller");
+    return null;
+  }
+
+  return (
+    <div className="flex h-screen overflow-hidden" style={{ background: "#F7F5F2" }}>
+      {!isOnboarding && (
+        <SellerSidebar
+          shopName={(session.user as any).shopName || "My Shop"}
+          ownerName={session.user.name || "Owner"}
+        />
+      )}
+      <main className="flex-1 overflow-y-auto">
+        {children}
+      </main>
+    </div>
+  );
 }

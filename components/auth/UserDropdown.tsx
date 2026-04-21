@@ -55,7 +55,7 @@ export default function UserDropdown() {
     return (
       <Link
         href="/login"
-        className="inline-flex items-center text-[1em]  px-2 transition-all duration-200 capitalize tracking-wide"
+        className="inline-flex font-medium items-center text-sm transition-all duration-200 capitalize tracking-wide"
       >
         Login
       </Link>

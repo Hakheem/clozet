@@ -27,10 +27,11 @@ const PAGE_SIZE = 24;
 export async function generateMetadata({
   params,
 }: {
-  params: { category: string };
+  params: Promise<{ category: string }>;
 }): Promise<Metadata> {
+  const awaitedParams = await params;
   const cat = await prisma.category.findUnique({
-    where: { slug: params.category },
+    where: { slug: awaitedParams.category },
     select: { name: true, description: true },
   });
   if (!cat) return { title: "Not found — Lukuu" };
@@ -46,26 +47,28 @@ export default async function CategoryPage({
   params,
   searchParams,
 }: {
-  params: { category: string };
-  searchParams: Record<string, string>;
+  params: Promise<{ category: string }>;
+  searchParams: Promise<Record<string, string>>;
 }) {
-  const page = Number(searchParams.page ?? 1);
+  const awaitedParams = await params;
+  const awaitedSearchParams = await searchParams;
+  const page = Number(awaitedSearchParams.page ?? 1);
 
   // Validate category exists
   const categoryMeta = await prisma.category.findUnique({
-    where: { slug: params.category, isActive: true },
+    where: { slug: awaitedParams.category, isActive: true },
     select: { name: true, description: true, image: true },
   });
   if (!categoryMeta) notFound();
 
   const [result, categories] = await Promise.all([
     getProducts({
-      categorySlug: params.category,
-      gender: (searchParams.gender as any) || undefined,
-      sortBy: (searchParams.sort as any) || "newest",
-      minPrice: searchParams.min ? Number(searchParams.min) : undefined,
-      maxPrice: searchParams.max ? Number(searchParams.max) : undefined,
-      search: searchParams.search || undefined,
+      categorySlug: awaitedParams.category,
+      gender: (awaitedSearchParams.gender as any) || undefined,
+      sortBy: (awaitedSearchParams.sort as any) || "newest",
+      minPrice: awaitedSearchParams.min ? Number(awaitedSearchParams.min) : undefined,
+      maxPrice: awaitedSearchParams.max ? Number(awaitedSearchParams.max) : undefined,
+      search: awaitedSearchParams.search || undefined,
       page,
       pageSize: PAGE_SIZE,
     }),
@@ -75,12 +78,12 @@ export default async function CategoryPage({
   const { products, total, totalPages } = result;
 
   function makeUrl(updates: Record<string, string | undefined>) {
-    const p = new URLSearchParams(searchParams as Record<string, string>);
+    const p = new URLSearchParams(awaitedSearchParams as Record<string, string>);
     Object.entries(updates).forEach(([k, v]) => {
       if (v === undefined) p.delete(k); else p.set(k, v);
     });
     p.set("page", updates.page ?? "1");
-    return `/shop/${params.category}?${p.toString()}`;
+    return `/shop/${awaitedParams.category}?${p.toString()}`;
   }
 
   return (
@@ -135,7 +138,7 @@ export default async function CategoryPage({
       <div className="flex">
         <ShopFilters
           categories={categories}
-          searchParams={{ ...searchParams, category: params.category }}
+          searchParams={{ ...awaitedSearchParams, category: awaitedParams.category }}
           makeUrl={makeUrl}
         />
 
@@ -152,9 +155,9 @@ export default async function CategoryPage({
                 <span
                   className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
                   style={{
-                    background: (searchParams.gender ?? "") === (g.value ?? "")
+                    background: (awaitedSearchParams.gender ?? "") === (g.value ?? "")
                       ? "#1C1A17" : "#FFFFFF",
-                    color: (searchParams.gender ?? "") === (g.value ?? "")
+                    color: (awaitedSearchParams.gender ?? "") === (g.value ?? "")
                       ? "#F7F5F2" : "#8A857D",
                     border: "1px solid #E4E0D9",
                   }}
@@ -170,7 +173,7 @@ export default async function CategoryPage({
               <p className="text-base font-medium mb-1" style={{ color: "#1C1A17" }}>
                 No products found
               </p>
-              <Link href={`/shop/${params.category}`} className="mt-3 text-sm underline"
+              <Link href={`/shop/${awaitedParams.category}`} className="mt-3 text-sm underline"
                 style={{ color: "#BFA47A" }}>
                 Clear filters
               </Link>

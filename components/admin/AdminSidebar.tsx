@@ -7,7 +7,7 @@ import {
   LayoutDashboard,
   Users,
   Store,
-  Package,
+  Package, 
   ShoppingBag,
   Wallet,
   Palette,
@@ -30,7 +30,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// ─── Nav structure ────────────────────────────────────────────────────────────
+
 const NAV_GROUPS = [
   {
     label: "Overview",
@@ -62,7 +62,6 @@ const NAV_GROUPS = [
   },
 ];
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function AdminSidebar({ adminName = "Administrator" }: { adminName?: string }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -127,7 +126,7 @@ export default function AdminSidebar({ adminName = "Administrator" }: { adminNam
         </div>
 
         {/* ── Navigation ── */}
-        <nav className="relative z-10 flex-1 overflow-y-auto px-3 py-4 space-y-5">
+        <nav className="relative z-10 flex-1 px-3 py-4 space-y-5">
           {NAV_GROUPS.map((group) => (
             <div key={group.label}>
               <p
@@ -174,7 +173,7 @@ export default function AdminSidebar({ adminName = "Administrator" }: { adminNam
                           className="w-4 h-4 flex-shrink-0"
                           style={{ color: active ? "#BFA47A" : "rgba(237,232,223,0.35)" }}
                         />
-                        <span style={{ fontFamily: "var(--font-dm-sans, sans-serif)" }}>
+                        <span style={{ fontFamily: "var(--font-dm-sans)" }}>
                           {item.label}
                         </span>
                         {active && (

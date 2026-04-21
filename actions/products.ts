@@ -1,19 +1,14 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// FILE: lib/actions/products.actions.ts
-//
-// All product-related server actions.
-// Covers: public shop queries (with filters/sort/pagination),
-//         admin management (create, update, delete, toggle).
-//
-// Every exported query that accepts filters uses the ProductFilters type —
-// keep filter logic in ONE place so the shop page, category page and
-// admin page all behave consistently.
-// ─────────────────────────────────────────────────────────────────────────────
 
 "use server";
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { 
+  uploadToCloudinary, 
+  deleteFromCloudinary, 
+  LUKKUU_FOLDERS,
+  cloudinary 
+} from "@/lib/cloudinary";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -27,6 +22,16 @@ export type SortOption =
   | "price_asc" // price ASC
   | "price_desc" // price DESC
   | "featured"; // isFeatured first, then newest
+
+export type ProductStatus = "NEW" | "HOT" | "SALE" | "NORMAL";
+export type ProductVariantType = "TSHIRT" | "JACKET" | "HOODIE" | "BOOTS" | "SNEAKERS" | "SOCKS" | "TROUSERS" | "SHORTS" | "ACCESSORIES";
+
+export type VariantInput = {
+  id?: string;
+  size?: string;
+  color?: string;
+  stock?: number;
+};
 
 export type ProductFilters = {
   // ── Scope ────────────────────────────────────────────────
@@ -63,17 +68,23 @@ export type ProductWithCategory = {
   id: string;
   name: string;
   slug: string;
+  intro: string | null;
   description: string | null;
   price: number;
-  comparePrice: number | null;
+  discountPrice: number | null;
   images: string[];
-  stock: number;
   isActive: boolean;
   isFeatured: boolean;
   gender: GenderType;
+  status: ProductStatus;
+  variantType: ProductVariantType;
+  brand: string | null;
+  material: string | null;
+  totalStock: number;
   createdAt: Date;
   category: { id: string; name: string; slug: string };
   seller: { id: string; name: string; shopName: string | null };
+  variants: { id: string; size: string | null; color: string | null; stock: number | null }[];
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -130,7 +141,10 @@ function buildOrderBy(sortBy?: SortOption) {
     case "price_desc":
       return { price: "desc" as const };
     case "featured":
-      return [{ isFeatured: "desc" as const }, { createdAt: "desc" as const }];
+      return [
+        { isFeatured: "desc" as const }, 
+        { createdAt: "desc" as const }
+      ];
     case "newest":
     default:
       return { createdAt: "desc" as const };
@@ -141,17 +155,23 @@ const PRODUCT_SELECT = {
   id: true,
   name: true,
   slug: true,
+  intro: true,
   description: true,
   price: true,
-  comparePrice: true,
+  discountPrice: true,
   images: true,
-  stock: true,
   isActive: true,
   isFeatured: true,
   gender: true,
+  status: true,
+  variantType: true,
+  brand: true,
+  material: true,
+  totalStock: true,
   createdAt: true,
   category: { select: { id: true, name: true, slug: true } },
   seller: { select: { id: true, name: true, shopName: true } },
+  variants: { select: { id: true, size: true, color: true, stock: true } },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -206,7 +226,7 @@ export async function getProductBySlug(slug: string) {
 export async function getProductById(id: string) {
   return prisma.product.findUnique({
     where: { id },
-    include: { category: true, seller: true },
+    include: { category: true, seller: true, variants: true },
   });
 }
 
@@ -248,39 +268,91 @@ function toSlug(name: string) {
 
 export type CreateProductInput = {
   name: string;
+  intro?: string;
   description?: string;
   price: number;
-  comparePrice?: number;
+  discountPrice?: number;
   images: string[];
-  stock: number;
   categoryId: string;
   sellerId: string;
   gender: GenderType;
   isFeatured?: boolean;
+  status?: ProductStatus;
+  variantType: ProductVariantType;
+  brand?: string;
+  material?: string;
+  totalStock: number;
+  variants: VariantInput[];
 };
+
+/** Cloudinary Signature for client-side uploads */
+export async function getCloudinarySignature() {
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const signature = cloudinary.utils.api_sign_request(
+    { timestamp, folder: LUKKUU_FOLDERS.PRODUCTS },
+    process.env.CLOUDINARY_API_SECRET!
+  );
+
+  return {
+    timestamp,
+    signature,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    folder: LUKKUU_FOLDERS.PRODUCTS,
+  };
+}
 
 export async function createProduct(data: CreateProductInput) {
   const slug = toSlug(data.name);
   const exists = await prisma.product.findUnique({ where: { slug } });
   if (exists) return { error: "A product with this name already exists." };
 
+  const uploadedImages: string[] = [];
+
+  // Support both pre-uploaded URLs and fallback base64
+  for (const img of data.images) {
+    if (img.startsWith("data:image")) {
+      try {
+        const upload = await uploadToCloudinary(img, LUKKUU_FOLDERS.PRODUCTS);
+        uploadedImages.push(upload.secure_url);
+      } catch (error) {
+        console.error("Cloudinary upload failed for product image:", error);
+      }
+    } else {
+      uploadedImages.push(img);
+    }
+  }
+
   await prisma.product.create({
     data: {
       name: data.name.trim(),
       slug,
+      intro: data.intro?.trim() || null,
       description: data.description?.trim() || null,
       price: data.price,
-      comparePrice: data.comparePrice ?? null,
-      images: data.images,
-      stock: data.stock,
+      discountPrice: data.discountPrice ?? null,
+      images: uploadedImages,
       gender: data.gender,
+      status: data.status || "NORMAL",
+      variantType: data.variantType,
+      brand: data.brand?.trim() || null,
+      material: data.material?.trim() || null,
+      totalStock: Number(data.totalStock),
       categoryId: data.categoryId,
       sellerId: data.sellerId,
       isFeatured: data.isFeatured ?? false,
-    },
+      variants: {
+        create: data.variants.map(v => ({
+          size: v.size || null,
+          color: v.color || null,
+          stock: v.stock !== undefined ? Number(v.stock) : undefined
+        }))
+      }
+    } as any,
   });
 
   revalidatePath("/admin/products");
+  revalidatePath("/seller/products");
   revalidatePath("/shop");
   return { success: true };
 }
@@ -291,11 +363,79 @@ export type UpdateProductInput = Partial<
   isActive?: boolean;
 };
 
-export async function updateProduct(id: string, data: UpdateProductInput) {
-  const payload: Record<string, unknown> = { ...data };
+export async function updateProduct(id: string, data: UpdateProductInput & { variants?: VariantInput[] }) {
+  const existing = await prisma.product.findUnique({
+    where: { id },
+    select: { images: true, variants: true },
+  });
+
+  if (!existing) return { error: "Product not found." };
+
+  const payload: Record<string, any> = { ...data };
   if (data.name) {
     payload.name = data.name.trim();
     payload.slug = toSlug(data.name);
+  }
+
+  if (data.images) {
+    const finalImages: string[] = [];
+    
+    // Identify images that were removed and delete them from Cloudinary
+    const removedImages = existing.images.filter(
+      (oldImg) => !data.images!.includes(oldImg)
+    );
+    for (const img of removedImages) {
+      await deleteFromCloudinary(img);
+    }
+
+    // Process new/existing images
+    for (const img of data.images) {
+      if (img.startsWith("data:image")) {
+        try {
+          const upload = await uploadToCloudinary(img, LUKKUU_FOLDERS.PRODUCTS);
+          finalImages.push(upload.secure_url);
+        } catch (error) {
+          console.error("Cloudinary update failed for product image:", error);
+        }
+      } else {
+        finalImages.push(img);
+      }
+    }
+    payload.images = finalImages;
+  }
+
+  if (data.variants) {
+    // 1. Delete variants removed from the list
+    const incomingIds = data.variants.map(v => v.id).filter(Boolean);
+    await prisma.productVariant.deleteMany({
+      where: {
+        productId: id,
+        id: { notIn: incomingIds as string[] }
+      }
+    });
+
+    // 2. Upsert remaining/new variants
+    for (const v of data.variants) {
+      if (v.id) {
+        await prisma.productVariant.update({
+          where: { id: v.id },
+          data: {
+            size: v.size || null,
+            color: v.color || null,
+            stock: v.stock !== undefined ? Number(v.stock) : undefined
+          }
+        });
+      } else {
+        await prisma.productVariant.create({
+          data: {
+            productId: id,
+            size: v.size || null,
+            color: v.color || null,
+            stock: v.stock !== undefined ? Number(v.stock) : undefined
+          }
+        });
+      }
+    }
   }
 
   await prisma.product.update({ where: { id }, data: payload });
@@ -334,8 +474,20 @@ export async function deleteProduct(id: string) {
     };
   }
 
+  const existing = await prisma.product.findUnique({
+    where: { id },
+    select: { images: true },
+  });
+
+  if (existing?.images) {
+    for (const img of existing.images) {
+      await deleteFromCloudinary(img);
+    }
+  }
+
   await prisma.product.delete({ where: { id } });
   revalidatePath("/admin/products");
+  revalidatePath("/seller/products");
   revalidatePath("/shop");
   return { success: true };
 }

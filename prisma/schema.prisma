@@ -17,7 +17,14 @@ model User {
   username      String?
   shopName      String?                      // only for SELLER
   payoutMethod  String?                      // e.g. "mpesa", "bank" — expand later
+  payoutDetails String?                      // specific details for payouts
   phoneNumber   String?
+  onboarded     Boolean  @default(false)     // track if seller profile is complete
+  bio           String?                      // store description
+  location      String?                      // store city/location
+  instagram     String?                      // social links
+  facebook      String?
+  tiktok        String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -101,19 +108,24 @@ model Category {
 // A product listed by a seller.
 // TODO: add variants (size/colour) as a separate model when needed.
 model Product {
-  id           String     @id @default(cuid())
-  name         String
-  slug         String     @unique
-  description  String?
-  price        Float
-  comparePrice Float?
-  images       String[]
-  stock        Int        @default(0)
-  isActive     Boolean    @default(true)
-  isFeatured   Boolean    @default(false)
-  gender       GenderType @default(UNISEX)   // ← new field
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id              String     @id @default(cuid())
+  name            String
+  slug            String     @unique
+  intro           String?
+  description     String?
+  price           Float
+  discountPrice   Float?
+  images          String[]
+  isActive        Boolean    @default(true)
+  isFeatured      Boolean    @default(false)
+  gender          GenderType @default(UNISEX)
+  status          ProductStatus @default(NORMAL)
+  variantType     ProductVariantType @default(TSHIRT)
+  brand           String?
+  material        String?
+  totalStock      Int        @default(0)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
   sellerId   String
   seller     User     @relation("SellerProducts", fields: [sellerId], references: [id])
@@ -121,14 +133,46 @@ model Product {
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
+  variants   ProductVariant[]
   orderItems OrderItem[]
 
   @@map("product")
 }
 
+model ProductVariant {
+  id        String  @id @default(cuid())
+  size      String? // e.g. "L", "42", "32W"
+  color     String? // e.g. "Midnight Black", "Camel"
+  stock     Int?    @default(0)
+  
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_variant")
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// ORDER MODELS
+// ENUMS
 // ─────────────────────────────────────────────────────────────────────────────
+
+enum ProductStatus {
+  NEW
+  HOT
+  SALE
+  NORMAL
+}
+
+enum ProductVariantType {
+  TSHIRT
+  JACKET
+  HOODIE
+  BOOTS
+  SNEAKERS
+  SOCKS
+  TROUSERS
+  SHORTS
+  ACCESSORIES
+}
 
 enum OrderStatus {
   PENDING     // just placed, awaiting confirmation
