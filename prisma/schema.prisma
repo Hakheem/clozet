@@ -236,7 +236,7 @@ model SiteContent {
   value     String             // the actual content
   updatedAt DateTime @updatedAt
 
-  @@map("site_content")
+  @@map("site_content") 
 }
 
 // Promotional banners shown on the homepage / shop pages.

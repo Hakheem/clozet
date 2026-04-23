@@ -17,14 +17,14 @@ import {
 export type GenderType = "MEN" | "WOMEN" | "KIDS" | "UNISEX";
 
 export type SortOption =
-  | "newest" // createdAt DESC  (default)
-  | "oldest" // createdAt ASC
-  | "price_asc" // price ASC
-  | "price_desc" // price DESC
-  | "featured"; // isFeatured first, then newest
+  | "newest" 
+  | "oldest" 
+  | "price_asc" 
+  | "price_desc"
+  | "featured"; 
 
 export type ProductStatus = "NEW" | "HOT" | "SALE" | "NORMAL";
-export type ProductVariantType = "TSHIRT" | "JACKET" | "HOODIE" | "BOOTS" | "SNEAKERS" | "SOCKS" | "TROUSERS" | "SHORTS" | "ACCESSORIES";
+export type ProductVariantType = "TSHIRT" | "JACKET" | "HOODIE" | "BOOTS" | "SNEAKERS" | "SOCKS" | "TROUSERS" | "SHORTS" | "SHOES" | "BAGS" | "ACCESSORIES";
 
 export type VariantInput = {
   id?: string;
@@ -172,7 +172,7 @@ const PRODUCT_SELECT = {
   category: { select: { id: true, name: true, slug: true } },
   seller: { select: { id: true, name: true, shopName: true } },
   variants: { select: { id: true, size: true, color: true, stock: true } },
-};
+}; 
 
 // ─────────────────────────────────────────────────────────────────────────────
 // READ — Public + Admin

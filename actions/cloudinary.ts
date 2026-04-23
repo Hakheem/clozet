@@ -8,10 +8,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-/**
- * Uploads a base64 string or file path to Cloudinary.
- * Returns the secure URL and other metadata.
- */
 export async function uploadToCloudinary(base64: string, folder: string = "clozet") {
   try {
     if (!base64) return null;
@@ -39,9 +35,7 @@ export async function uploadToCloudinary(base64: string, folder: string = "cloze
   }
 }
 
-/**
- * Deletes an image from Cloudinary using its public ID.
- */
+
 export async function deleteFromCloudinary(publicId: string) {
   try {
     await cloudinary.uploader.destroy(publicId);

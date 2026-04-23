@@ -11,24 +11,34 @@
 //   OVERLAY → full-bleed image, 50% linear gradient from right, text on right
 //   GRID    → left half image, right half text + button (no overlay)
 
+// components/general/CTABanners.tsx
+
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Prisma } from "@prisma/client";
+// 1. Import your existing singleton instance
+// Update the path below to match where your prisma file is located (e.g., @/lib/db or @/lib/prisma)
+import { prisma } from "@/lib/prisma"; 
 
 type Banner = {
-    id: string; title: string; subtitle: string | null; buttonText: string | null;
-    buttonHref: string | null; image: string | null; type: "GRID" | "OVERLAY";
+    id: string; 
+    title: string; 
+    subtitle: string | null; 
+    buttonText: string | null;
+    buttonHref: string | null; 
+    image: string | null; 
+    type: "GRID" | "OVERLAY";
     position: number;
 };
 
 async function getActiveBanners(): Promise<Banner[]> {
-    return Prisma.banner.findMany({
+    // 2. Simply use the shared 'prisma' instance directly.
+    // No 'new PrismaClient()' needed here!
+    return prisma.banner.findMany({
         where: { isActive: true },
         orderBy: { position: "asc" },
         take: 2,
     }) as Promise<Banner[]>;
 }
-
 // ─── Overlay banner ───────────────────────────────────────────────────────────
 // Full-bleed background image with a 50% linear gradient from the right side.
 // Text and CTA sit on the dark gradient half.

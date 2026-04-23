@@ -2,14 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* ─────────────────────────────────────────────────────────────
-   LUKUU — Design System
-   Palette: Warm Ink on Warm Linen  (no dark mode)
-   ─────────────────────────────────────────────────────────────
-   Pure silver/black felt cold.  Shifting every stop 1–3 degrees
-   warm — toward cream, taupe, gold — gives the same high-contrast
-   fashion look but with the tactile quality of fine fabric.
-   ───────────────────────────────────────────────────────────── */
+
 
 @theme inline {
   --color-background:            var(--background);
@@ -139,6 +132,10 @@
    ───────────────────────────────────────────────────────────── */
 .title {
   font-family: var(--font-title), ui-sans-serif, system-ui, sans-serif;
+}
+
+.gold{
+  color: #BFA47A
 }
 
 .hoverEffect {

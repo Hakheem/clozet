@@ -3,8 +3,10 @@ import Logo from './header/Logo'
 import Container from './Container'
 import MobileMenu from './header/MobileMenu'
 import SearchBar from './header/SearchBar'
-import CartIcon from './header/CartIcon'
+import CartSheet from '../general/CartSheet'
 import UserDropdown from '../auth/UserDropdown'
+import WishlistIcon from './header/WishlistIcon'
+import CompareBar from './header/CompareBar'
 
 
 const Header = () => {
@@ -13,7 +15,7 @@ const Header = () => {
 
       {/* ── Announcement bar ─────────────────────────────── */}
       <div
-        className="w-full py-3 text-center text-[0.65rem] font-semibold uppercase tracking-[0.22em]"
+        className="w-full py-3 px-2 text-center text-[0.55rem] md:text-[0.65rem] font-semibold uppercase tracking-[0.22em]"
         style={{
           background: '#1C1A17',
           color: 'rgba(191,164,122,0.9)',
@@ -28,7 +30,7 @@ const Header = () => {
         className="border-b"
         style={{ borderColor: '#E4E0D9' }}
       >
-        <Container className="flex items-center justify-between py-4 md:grid md:grid-cols-3 gap-6">
+        <Container className="flex items-center mx-auto justify-between py-4 md:grid md:grid-cols-3 gap-6">
 
           {/* Left — nav (desktop) */}
           <div className="hidden md:flex items-center justify-start">
@@ -43,11 +45,15 @@ const Header = () => {
 
           {/* Right — utilities */}
           <div className="flex items-center gap-4 justify-end">
+            <div className="flex gap-1 items-center">
             <SearchBar />
-            <CartIcon />
+            <CompareBar />
+            <WishlistIcon />
+            <CartSheet />
+            </div>
             <UserDropdown />
-          </div>
 
+          </div>
         </Container>
       </div>
 
