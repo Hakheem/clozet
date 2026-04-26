@@ -1,6 +1,7 @@
 import Container from "@/components/layout/Container";
 import CompareContent from "./CompareContent";
 import { Metadata } from "next";
+import BreadCrumbs from "@/components/shop/BreadCrumbs";
 
 export const metadata: Metadata = {
     title: "Compare — Lukuu",
@@ -9,7 +10,13 @@ export const metadata: Metadata = {
 
 export default function ComparePage() {
     return (
-        <Container className="mx-auto w-full">
+        <Container className="mx-auto w-full py-8">
+            <BreadCrumbs 
+                items={[
+                    { label: "Home", href: "/" },
+                    { label: "Compare", href: "/compare" }
+                ]} 
+            />
             <header className="py-12 border-b border-border mb-10 flex flex-col items-start gap-4">
                 <div className="flex items-center gap-3">
                     <div className="w-1.5 h-10 bg-accent rounded-full" />

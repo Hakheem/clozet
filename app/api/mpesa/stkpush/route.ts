@@ -16,7 +16,7 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { phone, amount, cartItems } = body;
+        const { phone, amount, cartItems, deliveryAddressId } = body;
 
         if (!phone || !amount || !cartItems || cartItems.length === 0) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -47,28 +47,34 @@ export async function POST(req: Request) {
             ("0" + date.getMinutes()).slice(-2) +
             ("0" + date.getSeconds()).slice(-2);
 
-        const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString("base64");
-
-        const payload = {
-            BusinessShortCode: shortcode,
-            Password: password,
-            Timestamp: timestamp,
-            TransactionType: "CustomerBuyGoodsOnline", // For Till Number
-            Amount: Math.round(amount), // Daraja expects integers
-            PartyA: formattedPhone,
-            PartyB: shortcode,
-            PhoneNumber: formattedPhone,
-            CallBackURL: callbackUrl,
-            AccountReference: "Lukuu Order",
-            TransactionDesc: "Payment for Lukuu items",
-        };
+        // Determine transaction type and PartyB based on configuration
+        const isTill = process.env.MPESA_BUSINESS_TYPE === "TILL";
+        const transactionType = isTill ? "CustomerBuyGoodsOnline" : "CustomerPayBillOnline";
+        
+        // For Till: BusinessShortCode is the Store Number, PartyB is the Till Number
+        // For Paybill: BusinessShortCode and PartyB are both the Paybill Number
+        const businessShortCode = process.env.MPESA_SHORTCODE!;
+        const password = Buffer.from(`${businessShortCode}${passkey}${timestamp}`).toString("base64");
+        const partyB = isTill ? process.env.MPESA_TILL_NUMBER! : businessShortCode;
 
         const url =
             environment === "live"
                 ? "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
                 : "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
 
-        const response = await axios.post(url, payload, {
+        const response = await axios.post(url, {
+            BusinessShortCode: businessShortCode,
+            Password: password,
+            Timestamp: timestamp,
+            TransactionType: transactionType,
+            Amount: Math.round(amount),
+            PartyA: formattedPhone,
+            PartyB: partyB,
+            PhoneNumber: formattedPhone,
+            CallBackURL: callbackUrl,
+            AccountReference: "Lukuu Order",
+            TransactionDesc: "Payment for Lukuu items",
+        }, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
@@ -86,6 +92,7 @@ export async function POST(req: Request) {
                     paymentStatus: "PENDING",
                     checkoutRequestID: checkoutRequestID,
                     phoneNumber: formattedPhone,
+                    deliveryAddressId: deliveryAddressId || null,
                     items: {
                         create: cartItems.map((item: any) => ({
                             productId: item.productId,

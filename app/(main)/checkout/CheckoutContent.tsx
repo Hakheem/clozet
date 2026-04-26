@@ -25,6 +25,8 @@ import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import axios from "axios";
+import { getAddresses } from "@/actions/addresses";
+import { useEffect } from "react";
 
 export default function CheckoutContent() {
     const { data: session } = useSession();
@@ -35,6 +37,24 @@ export default function CheckoutContent() {
     const [phone, setPhone] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
     const [checkoutRequestID, setCheckoutRequestID] = useState<string | null>(null);
+    const [addresses, setAddresses] = useState<any[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+
+    useEffect(() => {
+        if (session?.user?.id) {
+            getAddresses().then((res) => {
+                if (res.success && res.addresses) {
+                    setAddresses(res.addresses);
+                    const defaultAddr = res.addresses.find((a: any) => a.isDefault);
+                    if (defaultAddr) {
+                        setSelectedAddressId(defaultAddr.id);
+                    } else if (res.addresses.length > 0) {
+                        setSelectedAddressId(res.addresses[0].id);
+                    }
+                }
+            });
+        }
+    }, [session?.user?.id]);
 
     const subtotal = getTotal();
     const deliveryFee = deliveryMethod === "shipping" ? 200 : 0;
@@ -56,7 +76,7 @@ export default function CheckoutContent() {
                 const res = await axios.get(`/api/mpesa/status/${reqId}`);
                 if (res.data.status === "CONFIRMED" || res.data.paymentStatus === "COMPLETED") {
                     clearInterval(interval);
-                    clearCart();
+                    clearCart(); // Clear the cart ONLY after confirmation
                     toast.success("Payment successful!");
                     router.push("/checkout/success");
                 } else if (res.data.status === "CANCELLED" || res.data.paymentStatus === "FAILED") {
@@ -83,12 +103,18 @@ export default function CheckoutContent() {
             return;
         }
 
+        if (deliveryMethod === "shipping" && !selectedAddressId) {
+            toast.error("Please select a delivery address.");
+            return;
+        }
+
         setIsProcessing(true);
         try {
             const res = await axios.post("/api/mpesa/stkpush", {
                 phone,
                 amount: finalTotal,
                 cartItems: items,
+                deliveryAddressId: deliveryMethod === "shipping" ? selectedAddressId : undefined,
             });
 
             if (res.data.success) {
@@ -141,7 +167,7 @@ export default function CheckoutContent() {
 
                 <div className="space-y-6">
                     {items.map((item) => (
-                        <div key={item.id} className="group relative bg-white border border-border/40 rounded-2xl p-5 flex gap-6 hover:border-accent/30 transition-all duration-300 shadow-sm hover:shadow-md">
+                        <div key={item.id} className="group relative bg-white border border-border/40 rounded-xl p-5 flex gap-6 hover:border-accent/30 transition-all duration-300 shadow-sm hover:shadow-md">
                             {/* Product Image */}
                             <div className="relative w-32 h-40 bg-muted rounded-xl overflow-hidden shrink-0">
                                 <Image 
@@ -239,12 +265,12 @@ export default function CheckoutContent() {
             {/* ── Right Column: Checkout Summary (Span 2) ──────────────── */}
             <div className="lg:col-span-2">
                 <div className="sticky top-24 space-y-6">
-                    <div className="bg-white border border-border/50 rounded-3xl p-8 shadow-xl shadow-accent/5 space-y-8">
+                    <div className="bg-white border border-border/50 rounded-xl p-8 shadow-xl shadow-accent/5 space-y-8">
                         <div>
                             <h3 className="text-xl font-medium title tracking-tight mb-6">Order Summary</h3>
                             
                             {/* Delivery Method Selection */}
-                            <div className="grid grid-cols-2 gap-3 p-1.5 bg-muted/30 rounded-2xl border border-border/20 mb-8">
+                            <div className="grid grid-cols-2 gap-3 p-1.5 bg-muted/30 rounded-xl border border-border/20 mb-8">
                                 <button 
                                     onClick={() => setDeliveryMethod("shipping")}
                                     className={cn(
@@ -302,11 +328,44 @@ export default function CheckoutContent() {
                         </div>
 
                         {deliveryMethod === "pickup" && (
-                            <div className="p-4 rounded-2xl bg-accent/5 border border-accent/10 space-y-2">
+                            <div className="p-4 rounded-xl bg-accent/5 border border-accent/10 space-y-2">
                                 <p className="text-[0.65rem] font-bold uppercase tracking-widest text-accent">Store Pickup</p>
                                 <p className="text-[0.6rem] text-muted-foreground leading-relaxed">
                                     Our seller will call or text you shortly with the exact pickup point details and availability.
                                 </p>
+                            </div>
+                        )}
+
+                        {deliveryMethod === "shipping" && (
+                            <div className="p-4 rounded-xl border border-border/50 bg-white space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <p className="text-[0.65rem] font-bold uppercase tracking-widest text-primary">Delivery Address</p>
+                                    <Link href="/profile/addresses" className="text-[0.65rem] font-bold uppercase tracking-widest text-accent hover:underline">
+                                        Manage
+                                    </Link>
+                                </div>
+                                
+                                {addresses.length === 0 ? (
+                                    <div className="text-center py-4 bg-muted/30 rounded-lg">
+                                        <p className="text-xs text-muted-foreground mb-2">No addresses found.</p>
+                                        <Link href="/profile/addresses" className="text-xs font-medium text-primary hover:underline">
+                                            Add an address
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <select 
+                                        value={selectedAddressId}
+                                        onChange={(e) => setSelectedAddressId(e.target.value)}
+                                        className="w-full rounded-lg border border-border/50 px-3 py-2 text-sm bg-white outline-none focus:border-accent"
+                                    >
+                                        <option value="" disabled>Select an address</option>
+                                        {addresses.map((addr) => (
+                                            <option key={addr.id} value={addr.id}>
+                                                {addr.title} - {addr.street}, {addr.city}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
                             </div>
                         )}
 
@@ -319,14 +378,14 @@ export default function CheckoutContent() {
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                     disabled={isProcessing}
-                                    className="pl-9 rounded-xl h-12 bg-white"
+                                    className="pl-9 rounded-lg h-12 bg-white"
                                 />
                             </div>
 
                             <Button 
                                 onClick={handleMpesaPayment}
                                 disabled={isProcessing}
-                                className="w-full rounded-2xl py-8 bg-[#25D366] text-white hover:bg-[#128C7E] transition-all shadow-xl shadow-emerald-500/10 uppercase tracking-[0.25em] text-[0.75rem] font-bold group flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="w-full rounded-lg h-12 bg-[#25D366] text-white hover:bg-[#128C7E] transition-all shadow-md shadow-emerald-500/10 uppercase tracking-[0.25em] text-[0.75rem] font-bold group flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 {isProcessing ? (
                                     <>
@@ -335,9 +394,6 @@ export default function CheckoutContent() {
                                     </>
                                 ) : (
                                     <>
-                                        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#25D366] font-black text-[10px] shadow-sm">
-                                            M
-                                        </div>
                                         Pay with M-Pesa
                                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                     </>
@@ -352,7 +408,7 @@ export default function CheckoutContent() {
                         </div>
                     </div>
 
-                    <div className="p-6 border border-dashed border-border/50 rounded-3xl flex items-center gap-4 bg-white/50 backdrop-blur-sm">
+                    <div className="p-6 border border-dashed border-border/50 rounded-xl flex items-center gap-4 bg-white/50 backdrop-blur-sm">
                         <ShieldCheck className="w-8 h-8 text-accent/40" />
                         <div>
                             <p className="text-[0.65rem] font-bold uppercase tracking-widest text-primary">Secure Payment</p>

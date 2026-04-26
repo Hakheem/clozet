@@ -4,6 +4,7 @@ import ProductTabs from "@/components/general/ProductTabs";
 import { getCategoriesWithCounts } from "@/actions/products";
 import PremiumDeals from "@/components/general/PremiumDeals";
 import CTABanners from "@/components/general/CTABanners";
+import FeaturedGrid from "@/components/general/FeaturedGrid";
 
 export default async function Home() {
   const categories = await getCategoriesWithCounts();
@@ -14,8 +15,9 @@ export default async function Home() {
       <Container className="pt-12 mx-auto pb-24">
         <Hero />
         <ProductTabs />
-<PremiumDeals/>
-<CTABanners/>
+        <FeaturedGrid />
+        <PremiumDeals />
+        <CTABanners />
       </Container>
     </>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "@/lib/auth-client";
-import { Loader2, User, LogOut, LayoutDashboard, Store, AlertTriangle } from "lucide-react";
+import { Loader2, User, LogOut, LayoutDashboard, Store, AlertTriangle, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -167,6 +167,12 @@ export default function UserDropdown() {
                   href="/profile"
                   icon={<User className="h-3.5 w-3.5" />}
                   label="My Profile"
+                  onClick={() => setIsOpen(false)}
+                />
+                <MenuItem
+                  href="/profile/orders"
+                  icon={<ShoppingBag className="h-3.5 w-3.5" />}
+                  label="My Orders"
                   onClick={() => setIsOpen(false)}
                 />
               </div>

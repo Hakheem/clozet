@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import {
   Breadcrumb,
@@ -9,45 +10,32 @@ import {
 } from "@/components/ui/breadcrumb";
 
 interface BreadcrumbsProps {
-  category: {
-    name: string;
-    slug: string;
-  };
-  productName: string;
+  items: {
+    label: string;
+    href: string;
+  }[];
 }
 
-export default function Breadcrumbs({ category, productName }: BreadcrumbsProps) {
+export default function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink aschild>
-            <Link href="/" className="hover:text-[#BFA47A] transition-colors">Home</Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink aschild>
-            <Link href="/shop" className="hover:text-[#BFA47A] transition-colors">Shop</Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink aschild>
-            <Link
-              href={`/shop/${category.slug}`}
-              className="hover:text-[#BFA47A] transition-colors"
-            >
-              {category.name}
-            </Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage className="font-semibold text-primary truncate max-w-[150px] md:max-w-none">
-            {productName}
-          </BreadcrumbPage>
-        </BreadcrumbItem>
+        {items.map((item, index) => (
+          <React.Fragment key={item.href}>
+            <BreadcrumbItem>
+              {index === items.length - 1 ? (
+                <BreadcrumbPage className="font-semibold text-primary truncate max-w-[150px] md:max-w-none">
+                  {item.label}
+                </BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink render={<Link href={item.href} className="hover:text-[#BFA47A] transition-colors" />}>
+                  {item.label}
+                </BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
+            {index < items.length - 1 && <BreadcrumbSeparator />}
+          </React.Fragment>
+        ))}
       </BreadcrumbList>
     </Breadcrumb>
   );

@@ -33,11 +33,30 @@ model User {
   accounts Account[]
 
   // Platform relations
-  products Product[]   @relation("SellerProducts")  // products this user has listed (SELLER)
-  orders   Order[]     @relation("BuyerOrders")      // orders this user has placed (USER)
-  wallet   SellerWallet?                             // Wallet for SELLERs
+  products  Product[]   @relation("SellerProducts")  // products this user has listed (SELLER)
+  orders    Order[]     @relation("BuyerOrders")      // orders this user has placed (USER)
+  wallet    SellerWallet?                             // Wallet for SELLERs
+  addresses Address[]                                 // Delivery addresses
 
   @@map("user")
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  title     String   // e.g. "Home", "Office"
+  county    String
+  city      String
+  street    String
+  details   String?  // building, apartment
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders    Order[]
+
+  @@map("address")
 }
 
 model Session {
@@ -208,6 +227,9 @@ model Order {
 
   buyerId   String
   buyer     User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+
+  deliveryAddressId String?
+  deliveryAddress   Address? @relation(fields: [deliveryAddressId], references: [id])
 
   items     OrderItem[]
 

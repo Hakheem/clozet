@@ -30,8 +30,12 @@ export default async function SingleProductPage({ params }: Props) {
       <Container className='mx-auto'>
         <div className="py-6">
           <Breadcrumbs
-            category={product.category}
-            productName={product.name}
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Shop", href: "/shop" },
+              { label: product.category.name, href: `/shop/${product.category.slug}` },
+              { label: product.name, href: "" },
+            ]}
           />
         </div>
 
