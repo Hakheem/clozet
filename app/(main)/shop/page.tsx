@@ -28,12 +28,12 @@ export default async function ShopPage({
 
   const [result, categories] = await Promise.all([
     getProducts({
-      categorySlug: awaitedSearchParams.category  || undefined,
-      gender:       (awaitedSearchParams.gender as any) || undefined,
-      search:       awaitedSearchParams.search    || undefined,
-      sortBy:       (awaitedSearchParams.sort as any)   || "featured",
-      minPrice:     awaitedSearchParams.min ? Number(awaitedSearchParams.min) : undefined,
-      maxPrice:     awaitedSearchParams.max ? Number(awaitedSearchParams.max) : undefined,
+      categorySlug: awaitedSearchParams.category || undefined,
+      gender: (awaitedSearchParams.gender as any) || undefined,
+      search: awaitedSearchParams.search || undefined,
+      sortBy: (awaitedSearchParams.sort as any) || "featured",
+      minPrice: awaitedSearchParams.min ? Number(awaitedSearchParams.min) : undefined,
+      maxPrice: awaitedSearchParams.max ? Number(awaitedSearchParams.max) : undefined,
       page,
       pageSize: PAGE_SIZE,
     }),
@@ -44,7 +44,7 @@ export default async function ShopPage({
 
   const hasActiveFilters = !!(
     awaitedSearchParams.category || awaitedSearchParams.gender ||
-    awaitedSearchParams.search   || awaitedSearchParams.min    || awaitedSearchParams.max
+    awaitedSearchParams.search || awaitedSearchParams.min || awaitedSearchParams.max
   );
 
   // Canonical URL builder for pagination / filter links
@@ -58,27 +58,23 @@ export default async function ShopPage({
   }
 
   return (
-<Container>
-    <div style={{ background: "#F7F5F2", minHeight: "100vh" }}>
+    <Container className="mx-auto " >
 
       {/* ── Page header ──────────────────────────────────────── */}
       <div
-        className="px-6 md:px-12 py-10"
-        style={{ borderBottom: "1px solid #E4E0D9" }}
+        className="py-8 border-b border-border"
       >
-        <p className="text-[0.6rem] uppercase tracking-[0.25em] font-semibold mb-1"
-          style={{ color: "#BFA47A" }}>
+        <p className="text-[0.6rem] uppercase tracking-[0.25em] font-semibold mb-1 text-accent">
           — Explore
         </p>
         <h1
-          className="text-4xl md:text-5xl font-light"
-          style={{ fontFamily: "var(--font-cormorant, serif)", color: "#1C1A17" }}
+          className="text-4xl md:text-5xl font-light title"
         >
           The Shop
-          <span style={{ color: "#BFA47A" }}>.</span>
+          <span className='text-gold'>.</span>
         </h1>
-        <p className="mt-2 text-sm" style={{ color: "#8A857D" }}>
-          {total.toLocaleString()} piece{total !== 1 ? "s" : ""} available
+        <p className="mt-2 text-sm text-muted-foreground">
+          {total.toLocaleString()} items{total !== 1 ? "s" : ""} available
         </p>
       </div>
 
@@ -92,7 +88,7 @@ export default async function ShopPage({
         />
 
         {/* ── Product grid ─────────────────────────────────────── */}
-        <main className="flex-1 px-6 md:px-8 py-8">
+        <main className="flex-1 w-full px-6  py-8">
 
           {/* Sort + active filters bar */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
@@ -108,7 +104,7 @@ export default async function ShopPage({
                 <FilterChip label={`"${awaitedSearchParams.search}"`} href={makeUrl({ search: undefined })} />
               )}
               {hasActiveFilters && (
-                <Link href="/shop" className="text-xs underline" style={{ color: "#8A857D" }}>
+                <Link href="/shop" className="text-xs underline text-muted-foreground">
                   Clear all
                 </Link>
               )}
@@ -149,9 +145,9 @@ export default async function ShopPage({
           )}
         </main>
       </div>
-    </div>
 
-</Container>
+
+    </Container>
   );
 }
 
@@ -161,10 +157,9 @@ function FilterChip({ label, href }: { label: string; href: string }) {
   return (
     <Link href={href}>
       <span
-        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
-        style={{ background: "rgba(191,164,122,0.1)", border: "1px solid rgba(191,164,122,0.25)", color: "#1C1A17" }}
+        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors bg-accent/10 border border-accent/25 text-foreground"
       >
-        {label} <span style={{ color: "#8A857D" }}>×</span>
+        {label} <span className="text-muted-foreground">×</span>
       </span>
     </Link>
   );
@@ -177,25 +172,23 @@ function SortSelect({
   makeUrl: (u: Record<string, string | undefined>) => string;
 }) {
   const options = [
-    { value: "newest",     label: "Newest" },
-    { value: "oldest",     label: "Oldest" },
-    { value: "price_asc",  label: "Price ↑" },
+    { value: "newest", label: "Newest" },
+    { value: "oldest", label: "Oldest" },
+    { value: "price_asc", label: "Price ↑" },
     { value: "price_desc", label: "Price ↓" },
-    { value: "featured",   label: "Featured" },
+    { value: "featured", label: "Featured" },
   ];
   return (
-    <div className="flex items-center gap-2 text-xs" style={{ color: "#8A857D" }}>
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <span>Sort:</span>
       <div className="flex gap-1">
         {options.map(o => (
           <Link key={o.value} href={makeUrl({ sort: o.value })}>
             <span
-              className="px-2.5 py-1 rounded-lg transition-all"
-              style={{
-                background: value === o.value ? "#1C1A17" : "#FFFFFF",
-                color:      value === o.value ? "#F7F5F2" : "#8A857D",
-                border: `1px solid ${value === o.value ? "#1C1A17" : "#E4E0D9"}`,
-              }}
+              className={`px-2.5 py-1 rounded-lg transition-all ${value === o.value
+                ? "bg-foreground text-background border border-foreground"
+                : "bg-white text-muted-foreground border border-border"
+                }`}
             >
               {o.label}
             </span>
@@ -209,18 +202,17 @@ function SortSelect({
 function ShopEmptyState({ hasFilters }: { hasFilters: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4"
-        style={{ background: "rgba(191,164,122,0.08)", border: "1px solid rgba(191,164,122,0.15)" }}>
-        <PackageSearch className="w-6 h-6" style={{ color: "#BFA47A" }} />
+      <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-accent/8 border border-accent/15">
+        <PackageSearch className="w-6 h-6 text-accent" />
       </div>
-      <p className="text-base font-medium mb-1" style={{ color: "#1C1A17" }}>
+      <p className="text-base font-medium mb-1 text-foreground">
         {hasFilters ? "Nothing matches those filters" : "Nothing here yet"}
       </p>
-      <p className="text-sm" style={{ color: "#8A857D" }}>
+      <p className="text-sm text-muted-foreground">
         {hasFilters ? "Try adjusting or clearing your search." : "Check back soon for new drops."}
       </p>
       {hasFilters && (
-        <Link href="/shop" className="mt-4 text-sm underline" style={{ color: "#BFA47A" }}>
+        <Link href="/shop" className="mt-4 text-sm underline text-accent">
           Clear all filters
         </Link>
       )}
@@ -232,12 +224,10 @@ function PageLink({ href, label, active }: { href: string; label: string; active
   return (
     <Link href={href}>
       <span
-        className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-medium transition-all"
-        style={{
-          background: active ? "#1C1A17" : "#FFFFFF",
-          color:      active ? "#F7F5F2" : "#8A857D",
-          border: `1px solid ${active ? "#1C1A17" : "#E4E0D9"}`,
-        }}
+        className={`inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-medium transition-all ${active
+          ? "bg-foreground text-background border border-foreground"
+          : "bg-white text-muted-foreground border border-border"
+          }`}
       >
         {label}
       </span>

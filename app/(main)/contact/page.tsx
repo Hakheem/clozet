@@ -4,7 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, Phone, Mail, Clock, MessageCircle } from 'lucide-react'; 
+import { MapPin, Phone, Mail, Clock, MessageCircle } from 'lucide-react';
 import { LuFacebook, LuInstagram } from 'react-icons/lu'
 import { PiTiktokLogo } from 'react-icons/pi'
 import {
@@ -211,7 +211,7 @@ const ContactPage = () => {
           <p className="text-primary-foreground/70 mb-6 text-sm">
             WhatsApp is the fastest way to reach us for order updates, styling advice or anything urgent.
           </p>
-          {/* Fix 3: Removed asChild since your Button component doesn't support it */}
+          {/* Fix 3: Removed aschild since your Button component doesn't support it */}
           <Button variant="secondary" size="lg">
             <a href="https://wa.me/254769403162" target="_blank" rel="noreferrer" className="flex items-center">
               <MessageCircle className="w-4 h-4 mr-2" />

@@ -4,8 +4,8 @@ export const headerLinks = [
   { title: "Offers", href: "/offers" },
   { title: "Stores", href: "/stores" },
   { title: "Deals", href: "/deals" },
-  { title: "Featured", href: "/shop?=categories=featured" },
-  { title: "Gift", href: "/shop?=categories=gift" },
+  { title: "Featured", href: "/featured" },
+  // { title: "Featured", href: "/shop?=categories=featured" },
 ];
 
 
@@ -15,7 +15,7 @@ export const categoriesLinks =[
   { title: "Kids", href: "/shop?=categories=kids" },
   { title: "New", href: "/shop?=categories=new" },
   { title: "Featured", href: "/shop?=categories=featured" },
-  { title: "Gift", href: "/shop?=categories=gift" },
+  // { title: "Gift", href: "/shop?=categories=gift" },
 
 ]
 

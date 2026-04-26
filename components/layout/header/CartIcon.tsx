@@ -10,6 +10,6 @@ const CartIcon = () => {
 <span className='absolute -top-1 -right-1 w-3.5 h-3.5 font-medium rounded-full bg-primary text-background flex items-center justify-center text-xs p-1.5'>0</span>
     </Link>
   )
-}
+}  
 
 export default CartIcon

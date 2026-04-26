@@ -35,6 +35,7 @@ model User {
   // Platform relations
   products Product[]   @relation("SellerProducts")  // products this user has listed (SELLER)
   orders   Order[]     @relation("BuyerOrders")      // orders this user has placed (USER)
+  wallet   SellerWallet?                             // Wallet for SELLERs
 
   @@map("user")
 }
@@ -183,12 +184,25 @@ enum OrderStatus {
   REFUNDED    // refund processed
 }
 
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
 // An order placed by a buyer — may contain items from multiple sellers.
 model Order {
   id        String      @id @default(cuid())
   status    OrderStatus @default(PENDING)
   total     Float                            // sum of all item prices at checkout
   note      String?                          // buyer note
+  
+  // Payment Tracking
+  paymentStatus      PaymentStatus @default(PENDING)
+  mpesaReceiptNumber String?       @unique
+  phoneNumber        String?
+  checkoutRequestID  String?       @unique
+
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
@@ -272,5 +286,46 @@ enum GenderType {
   WOMEN
   KIDS
   UNISEX
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SELLER FINANCE MODELS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SellerWallet {
+  id              String   @id @default(cuid())
+  sellerId        String   @unique
+  seller          User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  balance         Float    @default(0) // Available to withdraw
+  pendingPayouts  Float    @default(0) // Requested but not yet disbursed
+  lifetimeEarnings Float   @default(0) // Total earned ever
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  transactions    SellerWalletTransaction[]
+
+  @@map("seller_wallet")
+}
+
+enum WalletTransactionType {
+  EARNING   // From a completed order
+  PAYOUT    // Withdrawal to bank/mpesa
+}
+
+model SellerWalletTransaction {
+  id              String   @id @default(cuid())
+  walletId        String
+  wallet          SellerWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  amount          Float
+  type            WalletTransactionType
+  description     String?  // e.g. "Earnings from Order #XYZ" or "Payout to M-Pesa"
+  referenceId     String?  // e.g. Order ID or Payout Transaction ID
+
+  createdAt       DateTime @default(now())
+
+  @@map("seller_wallet_transaction")
 }
 

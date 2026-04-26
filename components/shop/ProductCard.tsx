@@ -78,8 +78,7 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
   return (
     <div className="group block min-w-0">
       <div
-        className="relative overflow-hidden rounded-xl h-full flex flex-col"
-        style={{ background: "#FFFFFF", border: "1px solid #E4E0D9" }}
+        className="relative overflow-hidden rounded-xl h-full flex flex-col bg-white border border-border"
       >
         {/* Image Section */}
         <div className="relative h-[230px] lg:h-[280px] w-full overflow-hidden bg-[#EEE9E3]">
@@ -89,9 +88,8 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
                 <img
                   src={product.images[0]}
                   alt={product.name}
-                  className={`w-full h-full object-cover transition-all duration-700 ${
-                    product.images.length > 1 ? "group-hover:opacity-0 group-hover:scale-105" : "group-hover:scale-105"
-                  }`}
+                  className={`w-full h-full object-cover transition-all duration-700 ${product.images.length > 1 ? "group-hover:opacity-0 group-hover:scale-105" : "group-hover:scale-105"
+                    }`}
                 />
                 {product.images.length > 1 && (
                   <img
@@ -103,7 +101,7 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
               </>
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <span className="text-[0.6rem] font-bold uppercase tracking-widest text-[#8A857D]">No image</span>
+                <span className="text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground">No image</span>
               </div>
             )}
           </Link>
@@ -111,10 +109,9 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
           {/* Badges */}
           {product.status !== "NORMAL" && (
             <span
-              className="absolute top-2.5 left-2.5 text-[0.55rem] font-bold px-2 py-0.5 rounded uppercase tracking-widest z-10"
+              className="absolute top-2.5 left-2.5 text-[0.55rem] font-bold px-2 py-0.5 rounded uppercase tracking-widest z-10 text-white"
               style={{
                 background: product.status === "SALE" ? "#db3939" : product.status === "HOT" ? "#EA580C" : "#1C1A17",
-                color: "#FFFFFF"
               }}
             >
               {product.status}
@@ -122,21 +119,22 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
           )}
 
           {discountAmount && product.status !== "SALE" && (
-            <span className="absolute top-2.5 right-2.5 text-[0.6rem] font-semibold tracking-tight px-2 py-1 rounded border border-[#E4E0D9] z-10 bg-white text-[#1C1A17]">
+            <span className="absolute top-2.5 right-2.5 text-[0.6rem] font-semibold tracking-tight px-2 py-1 rounded border border-border z-10 bg-white text-foreground">
               -{discountAmount}% OFF
             </span>
           )}
 
           {/* Hover Icons */}
-          <div className="absolute bottom-0 left-0 right-0 flex justify-center items-center gap-6 py-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-10 bg-white/90 backdrop-blur-sm border-t border-[#E4E0D9]">
-            <button onClick={() => toggleFavorite(product.id)} className="cursor-pointer p-2 rounded-full bg-[#F9F8F6] border border-[#E4E0D9] hover:border-[#BFA47A] transition-all">
-              <Heart className={`w-4 h-4 ${isFavorite(product.id) ? "fill-[#BFA47A] text-[#BFA47A]" : "text-[#1C1A17]"}`} />
+          <div className="absolute bottom-0 left-0 right-0 flex justify-center items-center gap-6 py-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-10 bg-white/90 backdrop-blur-sm border-t border-border">
+            <button onClick={() => toggleFavorite(product.id)} className="cursor-pointer p-2 rounded-full bg-[#F9F8F6] border border-border hover:border-accent transition-all">
+              <Heart className={`w-4 h-4 ${isFavorite(product.id) ? "fill-accent text-accent" : "text-foreground"
+                }`} />
             </button>
-            <button className="cursor-pointer p-2 rounded-full bg-[#F9F8F6] border border-[#E4E0D9] hover:border-[#BFA47A] transition-all">
-              <ChartNoAxesColumn className="w-4 h-4 text-[#1C1A17]" />
+            <button className="cursor-pointer p-2 rounded-full bg-[#F9F8F6] border border-border hover:border-accent transition-all">
+              <ChartNoAxesColumn className="w-4 h-4 text-foreground" />
             </button>
-            <button onClick={handleShare} className="cursor-pointer p-2 rounded-full bg-[#F9F8F6] border border-[#E4E0D9] hover:border-[#BFA47A] transition-all">
-              <Share2 className="w-4 h-4 text-[#1C1A17]" />
+            <button onClick={handleShare} className="cursor-pointer p-2 rounded-full bg-[#F9F8F6] border border-border hover:border-accent transition-all">
+              <Share2 className="w-4 h-4 text-foreground" />
             </button>
           </div>
         </div>
@@ -144,11 +142,11 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
         {/* Product Info Section */}
         <div className="p-3.5 flex-1 flex flex-col">
           <div className="flex items-center justify-between gap-2 mb-1">
-            <span className="text-[0.6rem] uppercase tracking-[0.12em] text-[#BFA47A] font-medium truncate">
+            <span className="text-[0.6rem] uppercase tracking-[0.12em] text-accent font-medium truncate">
               {product.category.name}
             </span>
             {product.brand && (
-              <span className="text-[0.55rem] uppercase font-bold text-[#8A857D] truncate">{product.brand}</span>
+              <span className="text-[0.55rem] uppercase font-bold text-muted-foreground truncate">{product.brand}</span>
             )}
           </div>
 
@@ -181,7 +179,7 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
               <div className="flex items-center justify-between w-full md:w-24 rounded-md p-1">
                 <button
                   onClick={handleDecrement}
-                  className="flex items-center justify-center w-7 h-7 rounded-md bg-white border border-[#E4E0D9] text-[#1C1A17] hover:border-[#BFA47A] transition-colors cursor-pointer"
+                  className="flex items-center justify-center w-7 h-7 rounded-md bg-white border border-border text-foreground hover:border-accent transition-colors cursor-pointer"
                 >
                   <Minus className="w-3 h-3" />
                 </button>
@@ -189,7 +187,7 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
                 <button
                   onClick={handleIncrement}
                   disabled={quantityInCart >= product.totalStock}
-                  className="flex items-center justify-center w-7 h-7 rounded-md bg-white border border-[#E4E0D9] text-[#1C1A17] hover:border-[#BFA47A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  className="flex items-center justify-center w-7 h-7 rounded-md bg-white border border-border text-foreground hover:border-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
                   <Plus className="w-3 h-3" />
                 </button>

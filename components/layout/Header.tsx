@@ -13,7 +13,6 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-30 bg-background">
 
-      {/* ── Announcement bar ─────────────────────────────── */}
       <div
         className="w-full py-3 px-2 text-center text-[0.55rem] md:text-[0.65rem] font-semibold uppercase tracking-[0.22em]"
         style={{
@@ -25,25 +24,19 @@ const Header = () => {
         Free shipping on orders over KES 3,000 &nbsp;·&nbsp; New drops every Friday
       </div>
 
-      {/* ── Main header row ──────────────────────────────── */}
-      <div
-        className="border-b"
-        style={{ borderColor: '#E4E0D9' }}
-      >
+      <div className="border-b border-[#E4E0D9] ">
         <Container className="flex items-center mx-auto justify-between py-4 md:grid md:grid-cols-3 gap-6">
 
-          {/* Left — nav (desktop) */}
           <div className="hidden md:flex items-center justify-start">
             <HeaderMenu />
           </div>
 
-          {/* Centre — logo */}
           <div className="flex items-center justify-start md:justify-center gap-2">
             <MobileMenu />
             <Logo size="md" />
           </div>
 
-          {/* Right — utilities */}
+
           <div className="flex items-center gap-4 justify-end">
             <div className="flex gap-1 items-center">
             <SearchBar />

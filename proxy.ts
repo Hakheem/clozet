@@ -18,7 +18,7 @@ export async function proxy(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
 
     // 1. Define protected routes that REQUIRE a login
-    const protectedRoutes = ["/checkout", "/profile"];
+    const protectedRoutes = ["/profile"];
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
     // 2. Handle Unauthenticated Users
@@ -60,7 +60,7 @@ export async function proxy(request: NextRequest) {
 
   } catch (e) {
     // Only redirect to login on error if it's a protected route
-    const protectedRoutes = ["/checkout", "/profile"];
+    const protectedRoutes = ["/profile"];
     if (protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
       return NextResponse.redirect(new URL("/login", request.url));
     }

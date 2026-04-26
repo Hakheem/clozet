@@ -26,7 +26,7 @@ const PAGE_SIZE = 24;
 
 export async function generateMetadata({
   params,
-}: {
+}: { 
   params: Promise<{ category: string }>;
 }): Promise<Metadata> {
   const awaitedParams = await params;
@@ -87,7 +87,7 @@ export default async function CategoryPage({
   }
 
   return (
-    <div style={{ background: "#F7F5F2", minHeight: "100vh" }}>
+    <div className='min-h-screen flex flex-col'>
 
       {/* Category header */}
       <div

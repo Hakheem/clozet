@@ -21,21 +21,21 @@ export default function Breadcrumbs({ category, productName }: BreadcrumbsProps)
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink asChild>
+          <BreadcrumbLink aschild>
             <Link href="/" className="hover:text-[#BFA47A] transition-colors">Home</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink asChild>
+          <BreadcrumbLink aschild>
             <Link href="/shop" className="hover:text-[#BFA47A] transition-colors">Shop</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link 
-              href={`/shop/${category.slug}`} 
+          <BreadcrumbLink aschild>
+            <Link
+              href={`/shop/${category.slug}`}
               className="hover:text-[#BFA47A] transition-colors"
             >
               {category.name}

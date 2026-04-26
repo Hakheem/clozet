@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ShoppingBag, Trash2, Minus, Plus } from "lucide-react";
 import {
@@ -13,26 +13,34 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/lib/stores";
+import Link from "next/link";
 
 export default function CartSheet() {
     const { items, removeItem, updateQuantity, getTotal, getItemCount } = useCartStore();
     const [open, setOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const total = getTotal();
     const itemCount = getItemCount();
 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger>
-                <div role="button" className="relative p-2 hover:bg-[#BFA47A]/10 rounded-full transition-colors cursor-pointer outline-none">
-                    <ShoppingBag className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
-                    {itemCount > 0 && (
-                        <span className="absolute p-2 -top-1 -right-1 bg-[#BFA47A] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-white">
-                            {itemCount}
-                        </span>
-                    )}
-                </div>
-            </SheetTrigger>
+            <SheetTrigger
+                render={
+                    <div role="button" className="relative p-2 hover:bg-[#BFA47A]/10 rounded-full transition-colors cursor-pointer outline-none">
+                        <ShoppingBag className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
+                        {mounted && itemCount > 0 && (
+                            <span className="absolute p-2 -top-1 -right-0 bg-[#BFA47A] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-white">
+                                {itemCount}
+                            </span>
+                        )} 
+                    </div>
+                }
+            />
             <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0">
                 <SheetHeader className="p-4 border-b border-[#E4E0D9]">
                     <SheetTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-primary">
@@ -143,9 +151,11 @@ export default function CartSheet() {
                                 <span className="text-lg font-semibold text-primary">KES {total.toLocaleString()}</span>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Button className="w-full bg-primary hover:bg-primary/90 text-white h-10 rounded-full font-semibold text-[10px] uppercase tracking-[0.2em] shadow-sm cursor-pointer">
-                                    Checkout
-                                </Button>
+                                <Link href="/checkout" className="w-full" onClick={() => setOpen(false)}>
+                                    <Button className="w-full bg-primary hover:bg-primary/90 text-white h-10 rounded-md font-semibold text-[10px] uppercase tracking-[0.2em] shadow-sm cursor-pointer">
+                                        Checkout
+                                    </Button> 
+                                </Link>
                                 <button 
                                     onClick={() => setOpen(false)}
                                     className="w-full py-1 text-[10px] font-medium uppercase tracking-widest text-[#8A857D] hover:text-primary transition-colors cursor-pointer"

@@ -116,3 +116,34 @@ export const useFavoritesStore = create<FavoritesStore>()(
     },
   ),
 );
+
+interface CompareStore {
+  compareIds: string[];
+  addToCompare: (productId: string) => void;
+  removeFromCompare: (productId: string) => void;
+  clearCompare: () => void;
+  isInCompare: (productId: string) => boolean;
+}
+
+export const useCompareStore = create<CompareStore>()(
+  persist(
+    (set, get) => ({
+      compareIds: [],
+      addToCompare: (productId) => {
+        const current = get().compareIds;
+        if (current.length >= 4) return; // Limit comparison to 4 items
+        if (!current.includes(productId)) {
+          set({ compareIds: [...current, productId] });
+        }
+      },
+      removeFromCompare: (productId) => {
+        set({ compareIds: get().compareIds.filter((id) => id !== productId) });
+      },
+      clearCompare: () => set({ compareIds: [] }),
+      isInCompare: (productId) => get().compareIds.includes(productId),
+    }),
+    {
+      name: "compare-storage",
+    },
+  ),
+);

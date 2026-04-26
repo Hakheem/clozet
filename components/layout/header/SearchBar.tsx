@@ -68,11 +68,13 @@ const SearchBar = () => {
 
   return (
     <Dialog open={showSearch} onOpenChange={setShowSearch}>
-      <DialogTrigger onClick={() => setShowSearch(true)}>
-        <button className="cursor-pointer relative p-2 hover:bg-[#BFA47A]/10 rounded-full transition-colors">
-          <Search className='w-5 h-5 text-muted-foreground hover:text-primary' />
-        </button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <button className="cursor-pointer relative p-2 hover:bg-[#BFA47A]/10 rounded-full transition-colors">
+            <Search className='w-5 h-5 text-muted-foreground hover:text-primary' />
+          </button>
+        }
+      />
 
       <DialogContent className='min-w-4xl h-[85vh] flex flex-col overflow-hidden rounded-xl p-0'>
         <DialogHeader className='px-6 pt-4 pb-4 border-b'>
@@ -130,7 +132,7 @@ const SearchBar = () => {
                 {products.map((product) => (
                   <Link
                     key={product.id}
-                    href={`/shop/${product.category.slug}/${product.slug}`} 
+                    href={`/shop/${product.category.slug}/${product.slug}`}
                     onClick={() => setShowSearch(false)}
                     className='group'
                   >
@@ -195,5 +197,4 @@ const SearchBar = () => {
 }
 
 export default SearchBar
-
 
