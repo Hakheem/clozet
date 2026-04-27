@@ -1,7 +1,8 @@
 "use client";
 
 import { useSession, signOut } from "@/lib/auth-client";
-import { Loader2, User, LogOut, LayoutDashboard, Store, AlertTriangle, ShoppingBag } from "lucide-react";
+import { Loader2, User, LogOut, LayoutDashboard, Store, AlertTriangle, ShoppingBag, Bell } from "lucide-react";
+import NotificationDot from "../general/NotificationDot";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -97,10 +98,7 @@ export default function UserDropdown() {
             </span>
           )}
           {/* Online dot */}
-          <span
-            className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-background"
-            style={{ background: '#4ECCA3' }}
-          />
+          <NotificationDot />
         </button>
 
         {/* Dropdown */}
@@ -173,6 +171,12 @@ export default function UserDropdown() {
                   href="/profile/orders"
                   icon={<ShoppingBag className="h-3.5 w-3.5" />}
                   label="My Orders"
+                  onClick={() => setIsOpen(false)}
+                />
+                <MenuItem
+                  href="/notifications"
+                  icon={<Bell className="h-3.5 w-3.5" />}
+                  label="Notifications"
                   onClick={() => setIsOpen(false)}
                 />
               </div>

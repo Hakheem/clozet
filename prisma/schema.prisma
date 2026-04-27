@@ -37,6 +37,7 @@ model User {
   orders    Order[]     @relation("BuyerOrders")      // orders this user has placed (USER)
   wallet    SellerWallet?                             // Wallet for SELLERs
   addresses Address[]                                 // Delivery addresses
+  notifications Notification[]                        // User notifications
 
   @@map("user")
 }
@@ -201,6 +202,17 @@ enum OrderStatus {
   DELIVERED   // buyer received
   CANCELLED   // cancelled by buyer or seller
   REFUNDED    // refund processed
+  DISPUTED    // buyer disputes the delivery
+}
+
+enum OrderItemStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  DISPUTED
+  CANCELLED
+  REFUNDED
 }
 
 enum PaymentStatus {
@@ -242,6 +254,10 @@ model OrderItem {
   id        String  @id @default(cuid())
   quantity  Int
   price     Float   // unit price at time of order
+  
+  status    OrderItemStatus @default(PENDING)
+  deliveredAt DateTime?
+  isDisputed Boolean @default(false)
 
   orderId   String
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -336,6 +352,12 @@ enum WalletTransactionType {
   PAYOUT    // Withdrawal to bank/mpesa
 }
 
+enum WalletTransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
 model SellerWalletTransaction {
   id              String   @id @default(cuid())
   walletId        String
@@ -343,11 +365,40 @@ model SellerWalletTransaction {
   
   amount          Float
   type            WalletTransactionType
+  status          WalletTransactionStatus @default(COMPLETED)
   description     String?  // e.g. "Earnings from Order #XYZ" or "Payout to M-Pesa"
   referenceId     String?  // e.g. Order ID or Payout Transaction ID
+  transactionMessage String? // proof of payout from admin
 
   createdAt       DateTime @default(now())
 
   @@map("seller_wallet_transaction")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum NotificationType {
+  ORDER_SUCCESS
+  ORDER_FAILED
+  ORDER_STATUS_UPDATE
+  PAYOUT_REQUEST
+  PAYOUT_FAILED
+  PAYOUT_SUCCESS
+  SYSTEM
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        NotificationType
+  message     String
+  isRead      Boolean  @default(false)
+  link        String?  // Optional link to related page (e.g., order or payout)
+  createdAt   DateTime @default(now())
+
+  @@map("notification")
 }
 

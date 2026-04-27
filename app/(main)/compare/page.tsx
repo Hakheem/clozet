@@ -11,15 +11,8 @@ export const metadata: Metadata = {
 export default function ComparePage() {
     return (
         <Container className="mx-auto w-full py-8">
-            <BreadCrumbs 
-                items={[
-                    { label: "Home", href: "/" },
-                    { label: "Compare", href: "/compare" }
-                ]} 
-            />
-            <header className="py-12 border-b border-border mb-10 flex flex-col items-start gap-4">
+            <header className="py-8 border-b border-border mb-8 flex flex-col items-start gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-10 bg-accent rounded-full" />
                     <h1 className="text-4xl md:text-5xl font-light title tracking-tight">
                         Compare Items
                         <span className="text-accent">.</span>

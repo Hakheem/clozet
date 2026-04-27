@@ -125,3 +125,115 @@ export async function getAllOrders() {
         return { success: false, error: error.message };
     }
 }
+
+export async function updateOrderItemStatus(orderItemId: string, status: any) {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers(),
+        });
+
+        if (!session?.user?.id) {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        const orderItem = await prisma.orderItem.findUnique({
+            where: { id: orderItemId },
+            include: { product: true, order: true }
+        });
+
+        if (!orderItem) return { success: false, error: "Item not found" };
+
+        // Authorization: Only the seller of this product or an ADMIN can update status
+        const isSeller = orderItem.product.sellerId === session.user.id;
+        const isAdmin = session.user.role === "ADMIN";
+
+        if (!isSeller && !isAdmin) {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        const data: any = { status };
+        if (status === "DELIVERED") {
+            data.deliveredAt = new Date();
+        }
+
+        const updated = await prisma.orderItem.update({
+            where: { id: orderItemId },
+            data,
+        });
+
+        // Notify Buyer
+        await createNotification({
+            userId: orderItem.order.buyerId,
+            type: "ORDER_STATUS_UPDATE",
+            message: `Your item '${orderItem.product.name}' is now ${status.toLowerCase()}.`,
+            link: `/orders`
+        });
+
+        return { success: true, updated };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function toggleDispute(orderItemId: string, isDisputed: boolean) {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers(),
+        });
+
+        if (!session?.user?.id) {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        const orderItem = await prisma.orderItem.findUnique({
+            where: { id: orderItemId },
+            include: { order: true, product: true }
+        });
+
+        if (!orderItem) return { success: false, error: "Item not found" };
+
+        // Only buyer can dispute, or Admin
+        const isBuyer = orderItem.order.buyerId === session.user.id;
+        const isAdmin = session.user.role === "ADMIN";
+
+        if (!isBuyer && !isAdmin) {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        await prisma.orderItem.update({
+            where: { id: orderItemId },
+            data: { 
+                isDisputed,
+                status: isDisputed ? "DISPUTED" : orderItem.status
+            },
+        });
+
+        // Notify Seller and Admin
+        const notificationMsg = isDisputed 
+            ? `Order item for '${orderItem.product.name}' has been disputed by the buyer.`
+            : `Dispute for '${orderItem.product.name}' has been resolved.`;
+
+        await createNotification({
+            userId: orderItem.product.sellerId,
+            type: "ORDER_STATUS_UPDATE",
+            message: notificationMsg,
+            link: `/seller/orders`
+        });
+
+        const admins = await prisma.user.findMany({ where: { role: "ADMIN" } });
+        for (const admin of admins) {
+            await createNotification({
+                userId: admin.id,
+                type: "SYSTEM",
+                message: `DISPUTE ALERT: ${notificationMsg}`,
+                link: `/admin/orders`
+            });
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+import { createNotification } from "./notifications";

@@ -6,6 +6,7 @@ import ProductCard from "@/components/shop/ProductCard";
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import Title from "./Title";
 
 export default function FeaturedGrid() {
     const [products, setProducts] = useState<ProductWithCategory[]>([]);
@@ -42,15 +43,15 @@ export default function FeaturedGrid() {
     if (products.length === 0) return null;
 
     return (
-        <section className="mb-16">
+        <section className="my-16">
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
                         <Sparkles className="w-4 h-4 text-accent" />
                     </div>
                     <div>
-                        <h2 className="text-3xl md:text-4xl font-bold title tracking-tight text-primary">Featured Selection</h2>
-                        <p className="font=[11px] uppercase tracking-[0.2em] text-muted-foreground font-bold">Curated Excellence</p>
+                        <Title className="text-3xl md:text-4xl title tracking-tight"><span className="text-[#BFA47A]">Featured </span>Selection</Title>
+                        {/* <p className="font-bold tracking-[0.25em]  text-muted-foreground">Curated Excellence</p> */}
                     </div>
                 </div>
 

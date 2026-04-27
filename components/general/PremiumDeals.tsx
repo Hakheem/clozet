@@ -46,7 +46,7 @@ const PremiumDeals = () => {
     return (
         <Container className='my-24 mx-auto'>
             <section className='flex flex-col space-y-8'>
-                <div className="space-y-4">
+                <div className="space-y-2">
                     <div className="flex items-center justify-between">
                         <div className='flex items-center gap-3'>
                             <div className="w-8 h-8 rounded-full bg-[#BFA47A]/10 flex items-center justify-center">

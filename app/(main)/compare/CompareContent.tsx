@@ -4,7 +4,7 @@ import { useCompareStore } from "@/lib/stores";
 import { getProductById, ProductWithCategory } from "@/actions/products";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Trash, Plus, ChartNoAxesColumn, ShoppingCart, ArrowRight } from "lucide-react";
+import { Trash, Plus, ChartNoAxesColumn, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -74,11 +74,15 @@ export default function CompareContent() {
         { label: "Status", key: "status" },
     ];
 
+    const totalCols = 4; 
+    const filledCols = products.length;
+    const emptyCols = totalCols - filledCols;
+
     return (
-        <div className="pb-24">
-            <div className="flex justify-between items-center mb-10 pb-6 border-b border-border/50">
+        <div className="pb-20">
+            <div className="flex justify-between items-center mb-8 pb-6 border-b border-border/50">
                 <div className="flex items-center gap-4">
-                    <div className="px-3 py-1 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-widest">
+                    <div className="px-3 py-1 rounded-md bg-accent text-white text-[10px] font-bold uppercase tracking-widest">
                         {products.length} / 4 Items
                     </div>
                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest hidden md:block">
@@ -95,101 +99,109 @@ export default function CompareContent() {
                 </Button>
             </div>
 
-            <div className="flex overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 md:mx-0 md:px-0">
-                {/* Fixed Traits Labels (Desktop only) */}
-                <div className="hidden lg:flex flex-col w-48 shrink-0 mt-[400px]">
-                    {traits.map((trait) => (
-                        <div key={trait.label} className="h-20 flex items-center border-b border-border/40">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">{trait.label}</span>
-                        </div>
-                    ))}
-                </div>
+            <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+                <div 
+                    className="grid gap-0 border border-border/40 rounded-xl overflow-hidden bg-white min-w-[700px]"
+                    style={{ gridTemplateColumns: `140px repeat(${totalCols}, 1fr)` }}
+                >
+                    {/* Header Row */}
+                    <div className="bg-[#F9F8F6] border-b border-border/40 p-4 flex items-end">
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50">Feature</span>
+                    </div>
 
-                {/* Product Columns */}
-                <div className="flex gap-4 lg:gap-6 flex-1">
                     {products.map((product) => (
-                        <div key={product.id} className="w-[280px] lg:flex-1 min-w-[280px] flex flex-col group">
-                            {/* Product Header Card */}
-                            <div className="relative mb-8 group">
-                                <button 
-                                    onClick={() => removeFromCompare(product.id)}
-                                    className="absolute top-3 right-3 z-20 p-2 bg-white/90 backdrop-blur-md rounded-lg border border-border/50 text-muted-foreground hover:text-red-500 hover:border-red-200 transition-all shadow-sm"
-                                >
-                                    <Trash className="w-3.5 h-3.5" />
-                                </button>
-                                
-                                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-4 border border-border shadow-sm">
-                                    <Image 
-                                        src={product.images[0]} 
-                                        alt={product.name} 
-                                        fill 
-                                        className="object-cover group-hover:scale-105 transition-transform duration-700"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <div className="absolute bottom-4 left-4 right-4 translate-y-4 group-hover:translate-y-0 transition-transform opacity-0 group-hover:opacity-100">
-                                        <Link href={`/shop/${product.category.slug}/${product.slug}`}>
-                                            <Button className="w-full bg-white text-primary hover:bg-white/90 rounded-lg h-10 text-[10px] font-bold uppercase tracking-widest">
-                                                Quick View
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </div>
-                                
-                                <div className="px-1">
-                                    <p className="text-[9px] uppercase tracking-[0.2em] font-bold text-accent mb-1">{product.category.name}</p>
-                                    <h3 className="text-base font-bold title leading-tight line-clamp-1">{product.name}</h3>
-                                </div>
+                        <div key={product.id} className="border-b border-border/40 relative group">
+                            <button 
+                                onClick={() => removeFromCompare(product.id)}
+                                className="absolute top-3 right-3 z-10 p-1.5 bg-white/90 backdrop-blur-sm rounded-md border border-border/50 text-muted-foreground hover:text-red-500 hover:border-red-200 transition-all shadow-sm cursor-pointer"
+                            >
+                                <Trash className="w-3 h-3" />
+                            </button>
+
+                            <div className="relative w-full aspect-[4/3] rounded-sm overflow-hidden mb-3 border border-border/50">
+                                <Image 
+                                    src={product.images[0]} 
+                                    alt={product.name} 
+                                    fill 
+                                    className="object-cover"
+                                />
                             </div>
 
-                            {/* Traits Values */}
-                            <div className="space-y-0">
-                                {traits.map((trait) => (
-                                    <div key={`${product.id}-${trait.label}`} className="h-20 flex flex-col justify-center border-b border-border/40 lg:px-2">
-                                        {/* Mobile label */}
-                                        <span className="lg:hidden text-[8px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{trait.label}</span>
-                                        
-                                        {trait.key === "price" ? (
-                                            <span className="text-sm font-bold text-primary">KES {(product.discountPrice || product.price).toLocaleString()}</span>
-                                        ) : trait.key === "status" ? (
-                                            <span className={`text-[10px] font-bold uppercase tracking-widest w-fit px-2 py-0.5 rounded ${
-                                                product.status === 'SALE' ? 'bg-red-50 text-red-500' : 
-                                                product.status === 'HOT' ? 'bg-orange-50 text-orange-500' : 
-                                                'bg-primary/5 text-primary'
-                                            }`}>
-                                                {product.status}
-                                            </span>
-                                        ) : trait.key === "category" ? (
-                                            <span className="text-xs font-medium text-muted-foreground">{product.category.name}</span>
-                                        ) : (
-                                            <span className="text-xs font-medium text-muted-foreground">{product[trait.key as keyof ProductWithCategory] as string || "N/A"}</span>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* CTA Action */}
-                            <div className="mt-8">
-                                <Link href={`/shop/${product.category.slug}/${product.slug}`}>
-                                    <Button className="w-full h-12 rounded-xl bg-primary/5 text-primary hover:bg-primary hover:text-white border border-primary/10 transition-all font-bold text-[10px] uppercase tracking-widest gap-2">
-                                        View Details
-                                        <ArrowRight className="w-3.5 h-3.5" />
-                                    </Button>
-                                </Link>
-                            </div>
+                            <p className="text-[8px] px-4 uppercase tracking-[0.2em] font-bold text-accent mb-1">{product.category.name}</p>
+                            <h3 className="text-sm px-4 font-bold title leading-tight line-clamp-2">{product.name}</h3>
                         </div>
                     ))}
-                    
-                    {/* Placeholder for empty slot */}
-                    {products.length < 4 && (
-                        <Link href="/shop" className="w-[280px] lg:flex-1 min-w-[280px] flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-dashed border-border/40 bg-[#F9F8F6] group hover:bg-[#F0EDE8] transition-all min-h-[600px]">
-                            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
-                                <Plus className="w-5 h-5 text-muted-foreground" />
+
+                    {/* Empty slot headers */}
+                    {Array.from({ length: emptyCols }).map((_, i) => (
+                        <div key={`empty-header-${i}`} className="border-b border-border/40 p-4">
+                            <Link href="/shop" className="flex flex-col items-center justify-center h-full min-h-[120px] rounded-lg border-2 border-dashed border-border/30 bg-[#F9F8F6]/50 hover:bg-[#F0EDE8]/50 transition-all group">
+                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-sm">
+                                    <Plus className="w-4 h-4 text-muted-foreground" />
+                                </div>
+                                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Add Item</p>
+                            </Link>
+                        </div>
+                    ))}
+
+                    {/* Trait Rows */}
+                    {traits.map((trait) => (
+                        <>
+                            {/* Trait Label */}
+                            <div key={`label-${trait.key}`} className="bg-[#F9F8F6] border-b border-border/40 p-4 flex items-center">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">{trait.label}</span>
                             </div>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Add Item</p>
-                        </Link>
-                    )}
+
+                            {/* Product Values */}
+                            {products.map((product) => (
+                                <div key={`${product.id}-${trait.key}`} className="border-b border-border/40 p-4 flex items-center">
+                                    {trait.key === "price" ? (
+                                        <span className="text-sm font-bold text-primary">KES {(product.discountPrice || product.price).toLocaleString()}</span>
+                                    ) : trait.key === "status" ? (
+                                        <span className={`text-[10px] font-bold uppercase tracking-widest w-fit px-2 py-0.5 rounded ${
+                                            product.status === 'SALE' ? 'bg-red-50 text-red-500' : 
+                                            product.status === 'HOT' ? 'bg-orange-50 text-orange-500' : 
+                                            'bg-primary/5 text-primary'
+                                        }`}>
+                                            {product.status}
+                                        </span>
+                                    ) : trait.key === "category" ? (
+                                        <span className="text-xs font-medium text-muted-foreground">{product.category.name}</span>
+                                    ) : (
+                                        <span className="text-xs font-medium text-muted-foreground">{product[trait.key as keyof ProductWithCategory] as string || "N/A"}</span>
+                                    )}
+                                </div>
+                            ))}
+
+                            {/* Empty slot values */}
+                            {Array.from({ length: emptyCols }).map((_, i) => (
+                                <div key={`empty-${trait.key}-${i}`} className="border-b border-border/40 p-4 bg-[#F9F8F6]/30" />
+                            ))}
+                        </>
+                    ))}
+
+                    {/* CTA Row */}
+                    <div className="bg-[#F9F8F6] p-4 flex items-center">
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50">Action</span>
+                    </div>
+
+                    {products.map((product) => (
+                        <div key={`cta-${product.id}`} className="p-4">
+                            <Link href={`/shop/${product.category.slug}/${product.slug}`}>
+                                <Button className="w-full h-9 rounded-lg bg-primary/5 text-primary hover:bg-primary hover:text-white border border-primary/10 transition-all font-bold text-[10px] uppercase tracking-widest gap-1.5">
+                                    View
+                                    <ArrowRight className="w-3 h-3" />
+                                </Button>
+                            </Link>
+                        </div>
+                    ))}
+
+                    {Array.from({ length: emptyCols }).map((_, i) => (
+                        <div key={`empty-cta-${i}`} className="p-4 bg-[#F9F8F6]/30" />
+                    ))}
                 </div>
             </div>
         </div>
     );
 }
+
