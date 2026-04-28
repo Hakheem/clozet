@@ -1,58 +1,52 @@
-datasource db {
-  provider = "postgresql"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+}
 
 model User {
-  id            String   @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
-  email         String   @unique
+  email         String         @unique
   emailVerified Boolean
   image         String?
-  role          String?  @default("USER")   // "USER" | "SELLER" | "ADMIN"
-  username      String?
-  shopName      String?                      // only for SELLER
-  payoutMethod  String?                      // e.g. "mpesa", "bank" — expand later
-  payoutDetails String?                      // specific details for payouts
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  role          String?        @default("USER")
+  payoutMethod  String?
   phoneNumber   String?
-  onboarded     Boolean  @default(false)     // track if seller profile is complete
-  bio           String?                      // store description
-  location      String?                      // store city/location
-  instagram     String?                      // social links
+  shopName      String?
+  username      String?
+  bio           String?
   facebook      String?
+  instagram     String?
+  location      String?
+  onboarded     Boolean        @default(false)
+  payoutDetails String?
   tiktok        String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Auth relations (Better Auth)
-  sessions Session[]
-  accounts Account[]
-
-  // Platform relations
-  products  Product[]   @relation("SellerProducts")  // products this user has listed (SELLER)
-  orders    Order[]     @relation("BuyerOrders")      // orders this user has placed (USER)
-  wallet    SellerWallet?                             // Wallet for SELLERs
-  addresses Address[]                                 // Delivery addresses
-  notifications Notification[]                        // User notifications
+  accounts      Account[]
+  addresses     Address[]
+  notifications Notification[]
+  orders        Order[]        @relation("BuyerOrders")
+  products      Product[]      @relation("SellerProducts")
+  wallet        SellerWallet?
+  sessions      Session[]
 
   @@map("user")
 }
 
 model Address {
   id        String   @id @default(cuid())
-  title     String   // e.g. "Home", "Office"
+  title     String
   county    String
   city      String
   street    String
-  details   String?  // building, apartment
+  details   String?
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders    Order[]
@@ -79,7 +73,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -89,6 +82,7 @@ model Account {
   password              String?
   createdAt             DateTime
   updatedAt             DateTime
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("account")
 }
@@ -104,77 +98,164 @@ model Verification {
   @@map("verification")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CATALOGUE MODELS
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Top-level product category (e.g. Apparel, Bags, Shoes, Accessories).
-// Managed from admin /content page — CRUD is fully implemented there.
 model Category {
   id          String    @id @default(cuid())
   name        String    @unique
-  slug        String    @unique   // auto-generated from name, used in URLs
+  slug        String    @unique
   description String?
-  image       String?             // display image for category cards on the shop
+  image       String?
   isActive    Boolean   @default(true)
-  position    Int       @default(0)  // display order
+  position    Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
   products    Product[]
 
   @@map("category")
 }
 
-// A product listed by a seller.
-// TODO: add variants (size/colour) as a separate model when needed.
 model Product {
-  id              String     @id @default(cuid())
-  name            String
-  slug            String     @unique
-  intro           String?
-  description     String?
-  price           Float
-  discountPrice   Float?
-  images          String[]
-  isActive        Boolean    @default(true)
-  isFeatured      Boolean    @default(false)
-  gender          GenderType @default(UNISEX)
-  status          ProductStatus @default(NORMAL)
-  variantType     ProductVariantType @default(TSHIRT)
-  brand           String?
-  material        String?
-  totalStock      Int        @default(0)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-
-  sellerId   String
-  seller     User     @relation("SellerProducts", fields: [sellerId], references: [id])
-
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  variants   ProductVariant[]
-  orderItems OrderItem[]
+  id            String             @id @default(cuid())
+  name          String
+  slug          String             @unique
+  description   String?
+  price         Float
+  images        String[]
+  isActive      Boolean            @default(true)
+  isFeatured    Boolean            @default(false)
+  gender        GenderType         @default(UNISEX)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  sellerId      String
+  categoryId    String
+  brand         String?
+  discountPrice Float?
+  intro         String?
+  status        ProductStatus      @default(NORMAL)
+  variantType   ProductVariantType @default(TSHIRT)
+  material      String?
+  totalStock    Int                @default(0)
+  orderItems    OrderItem[]
+  category      Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  seller        User               @relation("SellerProducts", fields: [sellerId], references: [id], onDelete: Cascade)
+  variants      ProductVariant[]
 
   @@map("product")
 }
 
 model ProductVariant {
   id        String  @id @default(cuid())
-  size      String? // e.g. "L", "42", "32W"
-  color     String? // e.g. "Midnight Black", "Camel"
+  size      String?
+  color     String?
   stock     Int?    @default(0)
-  
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_variant")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ENUMS
-// ─────────────────────────────────────────────────────────────────────────────
+model Order {
+  id                 String        @id @default(cuid())
+  status             OrderStatus   @default(PENDING)
+  total              Float
+  note               String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  buyerId            String
+  checkoutRequestID  String?       @unique
+  mpesaReceiptNumber String?       @unique
+  paymentStatus      PaymentStatus @default(PENDING)
+  phoneNumber        String?
+  deliveryAddressId  String?
+  buyer              User          @relation("BuyerOrders", fields: [buyerId], references: [id], onDelete: Cascade)
+  deliveryAddress    Address?      @relation(fields: [deliveryAddressId], references: [id], onDelete: Cascade)
+  items              OrderItem[]
+
+  @@map("order")
+}
+
+model OrderItem {
+  id              String          @id @default(cuid())
+  quantity        Int
+  price           Float
+  orderId         String
+  productId       String
+  deliveredAt     DateTime?
+  isDisputed      Boolean         @default(false)
+  status          OrderItemStatus @default(PENDING)
+  statusUpdatedAt DateTime?
+  order           Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product         @relation(fields: [productId], references: [id])
+
+  @@map("order_item")
+}
+
+model SiteContent {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  label     String
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("site_content")
+}
+
+model Banner {
+  id         String     @id @default(cuid())
+  title      String
+  subtitle   String?
+  buttonText String?
+  buttonHref String?
+  image      String?
+  type       BannerType @default(OVERLAY)
+  isActive   Boolean    @default(true)
+  position   Int        @default(0)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@map("banner")
+}
+
+model SellerWallet {
+  id               String                    @id @default(cuid())
+  sellerId         String                    @unique
+  balance          Float                     @default(0)
+  pendingPayouts   Float                     @default(0)
+  lifetimeEarnings Float                     @default(0)
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+  seller           User                      @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  transactions     SellerWalletTransaction[]
+
+  @@map("seller_wallet")
+}
+
+model SellerWalletTransaction {
+  id                 String                  @id @default(cuid())
+  walletId           String
+  amount             Float
+  type               WalletTransactionType
+  description        String?
+  referenceId        String?
+  createdAt          DateTime                @default(now())
+  status             WalletTransactionStatus @default(COMPLETED)
+  transactionMessage String?
+  wallet             SellerWallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@map("seller_wallet_transaction")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  message   String
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification")
+}
 
 enum ProductStatus {
   NEW
@@ -196,13 +277,13 @@ enum ProductVariantType {
 }
 
 enum OrderStatus {
-  PENDING     // just placed, awaiting confirmation
-  CONFIRMED   // seller confirmed
-  SHIPPED     // dispatched
-  DELIVERED   // buyer received
-  CANCELLED   // cancelled by buyer or seller
-  REFUNDED    // refund processed
-  DISPUTED    // buyer disputes the delivery
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+  DISPUTED
 }
 
 enum OrderItemStatus {
@@ -221,104 +302,10 @@ enum PaymentStatus {
   FAILED
 }
 
-// An order placed by a buyer — may contain items from multiple sellers.
-model Order {
-  id        String      @id @default(cuid())
-  status    OrderStatus @default(PENDING)
-  total     Float                            // sum of all item prices at checkout
-  note      String?                          // buyer note
-  
-  // Payment Tracking
-  paymentStatus      PaymentStatus @default(PENDING)
-  mpesaReceiptNumber String?       @unique
-  phoneNumber        String?
-  checkoutRequestID  String?       @unique
-
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  buyerId   String
-  buyer     User        @relation("BuyerOrders", fields: [buyerId], references: [id])
-
-  deliveryAddressId String?
-  deliveryAddress   Address? @relation(fields: [deliveryAddressId], references: [id])
-
-  items     OrderItem[]
-
-  @@map("order")
-}
-
-// A single line item inside an order.
-// Stores price at time of purchase so price changes don't affect history.
-model OrderItem {
-  id        String  @id @default(cuid())
-  quantity  Int
-  price     Float   // unit price at time of order
-  
-  status    OrderItemStatus @default(PENDING)
-  statusUpdatedAt DateTime?
-  deliveredAt DateTime?
-  isDisputed Boolean @default(false)
-
-  orderId   String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-
-  @@map("order_item")
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SITE CONTENT MODELS  (editable from /admin/content)
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Key-value store for editable site-wide text content.
-// Admin manages this from the Content page.
-//
-// Reserved keys (seed these on first deploy):
-//   "hero_headline"        → main hero heading
-//   "hero_subtext"         → hero paragraph
-//   "announcement_bar"     → top strip message in the header
-//
-// Add more keys freely — the Content page renders them all.
-model SiteContent {
-  id        String   @id @default(cuid())
-  key       String   @unique   // e.g. "hero_headline"
-  label     String             // human-readable label shown in admin UI
-  value     String             // the actual content
-  updatedAt DateTime @updatedAt
-
-  @@map("site_content") 
-}
-
-// Promotional banners shown on the homepage / shop pages.
-// The admin creates exactly two primary banners (position 1 & 2)
-// but the model is flexible for more.
-model Banner {
-  id          String     @id @default(cuid())
-  title       String
-  subtitle    String?
-  buttonText  String?
-  buttonHref  String?
-  image       String?
-  type        BannerType @default(OVERLAY)   // controls which component variant renders
-  isActive    Boolean    @default(true)
-  position    Int        @default(0)          // 1 = left/first, 2 = right/second
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  @@map("banner")
-}
-
 enum BannerType {
-  // Left panel: image | right panel: text + button
   GRID
-
-  // Full-bleed bg image with 50% linear gradient overlay; text sits on overlay half
   OVERLAY
 }
-
 
 enum GenderType {
   MEN
@@ -327,30 +314,9 @@ enum GenderType {
   UNISEX
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SELLER FINANCE MODELS
-// ─────────────────────────────────────────────────────────────────────────────
-
-model SellerWallet {
-  id              String   @id @default(cuid())
-  sellerId        String   @unique
-  seller          User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  
-  balance         Float    @default(0) // Available to withdraw
-  pendingPayouts  Float    @default(0) // Requested but not yet disbursed
-  lifetimeEarnings Float   @default(0) // Total earned ever
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  transactions    SellerWalletTransaction[]
-
-  @@map("seller_wallet")
-}
-
 enum WalletTransactionType {
-  EARNING   // From a completed order
-  PAYOUT    // Withdrawal to bank/mpesa
+  EARNING
+  PAYOUT
 }
 
 enum WalletTransactionStatus {
@@ -358,27 +324,6 @@ enum WalletTransactionStatus {
   COMPLETED
   FAILED
 }
-
-model SellerWalletTransaction {
-  id              String   @id @default(cuid())
-  walletId        String
-  wallet          SellerWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  
-  amount          Float
-  type            WalletTransactionType
-  status          WalletTransactionStatus @default(COMPLETED)
-  description     String?  // e.g. "Earnings from Order #XYZ" or "Payout to M-Pesa"
-  referenceId     String?  // e.g. Order ID or Payout Transaction ID
-  transactionMessage String? // proof of payout from admin
-
-  createdAt       DateTime @default(now())
-
-  @@map("seller_wallet_transaction")
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// NOTIFICATIONS
-// ─────────────────────────────────────────────────────────────────────────────
 
 enum NotificationType {
   ORDER_SUCCESS
@@ -389,17 +334,3 @@ enum NotificationType {
   PAYOUT_SUCCESS
   SYSTEM
 }
-
-model Notification {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type        NotificationType
-  message     String
-  isRead      Boolean  @default(false)
-  link        String?  // Optional link to related page (e.g., order or payout)
-  createdAt   DateTime @default(now())
-
-  @@map("notification")
-}
-

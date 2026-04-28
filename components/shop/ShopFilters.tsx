@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
+import { makeShopUrl } from "@/lib/shop-url-builder";
 
 type Category = { id: string; name: string; slug: string; productCount: number };
 
@@ -24,17 +25,20 @@ const PRICE_RANGES = [
 export default function ShopFilters({
   categories,
   searchParams,
-  makeUrl,
+  baseUrl,
 }: {
   categories: Category[];
   searchParams: Record<string, string>;
-  makeUrl: (u: Record<string, string | undefined>) => string;
+  baseUrl: string;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const activeGender = searchParams.gender ?? "";
   const activeCategory = searchParams.category ?? "";
   const activeMin = searchParams.min ?? "";
   const activeMax = searchParams.max ?? "";
+
+  const makeUrl = (updates: Record<string, string | undefined>) =>
+    makeShopUrl(baseUrl, searchParams, updates);
 
   const filterContent = (
     <>
@@ -144,8 +148,8 @@ function FilterItem({
   return (
     <span
       className={`flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${active
-          ? "bg-accent/10 text-foreground font-semibold"
-          : "bg-transparent text-muted-foreground font-normal"
+        ? "bg-accent/10 text-foreground font-semibold"
+        : "bg-transparent text-muted-foreground font-normal"
         }`}
     >
       <span>{label}</span>

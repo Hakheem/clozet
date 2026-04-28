@@ -193,7 +193,7 @@ export async function updateOrderItemStatus(orderItemId: string, status: any) {
             userId: orderItem.order.buyerId,
             type: "ORDER_STATUS_UPDATE",
             message: `Your item '${orderItem.product.name}' is now ${status.toLowerCase()}.`,
-            link: `/orders`
+            link: `/profile/orders`
         });
 
         return { success: true, updated };

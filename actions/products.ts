@@ -1,13 +1,14 @@
-
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { 
-  uploadToCloudinary, 
-  deleteFromCloudinary, 
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
   LUKKUU_FOLDERS,
-  cloudinary 
+  cloudinary,
 } from "@/lib/cloudinary";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -17,14 +18,25 @@ import {
 export type GenderType = "MEN" | "WOMEN" | "KIDS" | "UNISEX";
 
 export type SortOption =
-  | "newest" 
-  | "oldest" 
-  | "price_asc" 
+  | "newest"
+  | "oldest"
+  | "price_asc"
   | "price_desc"
-  | "featured"; 
+  | "featured";
 
 export type ProductStatus = "NEW" | "HOT" | "SALE" | "NORMAL";
-export type ProductVariantType = "TSHIRT" | "JACKET" | "HOODIE" | "BOOTS" | "SNEAKERS" | "SOCKS" | "TROUSERS" | "SHORTS" | "SHOES" | "BAGS" | "ACCESSORIES";
+export type ProductVariantType =
+  | "TSHIRT"
+  | "JACKET"
+  | "HOODIE"
+  | "BOOTS"
+  | "SNEAKERS"
+  | "SOCKS"
+  | "TROUSERS"
+  | "SHORTS"
+  | "SHOES"
+  | "BAGS"
+  | "ACCESSORIES";
 
 export type VariantInput = {
   id?: string;
@@ -84,7 +96,12 @@ export type ProductWithCategory = {
   createdAt: Date;
   category: { id: string; name: string; slug: string };
   seller: { id: string; name: string; shopName: string | null };
-  variants: { id: string; size: string | null; color: string | null; stock: number | null }[];
+  variants: {
+    id: string;
+    size: string | null;
+    color: string | null;
+    stock: number | null;
+  }[];
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -141,10 +158,7 @@ function buildOrderBy(sortBy?: SortOption) {
     case "price_desc":
       return { price: "desc" as const };
     case "featured":
-      return [
-        { isFeatured: "desc" as const }, 
-        { createdAt: "desc" as const }
-      ];
+      return [{ isFeatured: "desc" as const }, { createdAt: "desc" as const }];
     case "newest":
     default:
       return { createdAt: "desc" as const };
@@ -172,7 +186,7 @@ const PRODUCT_SELECT = {
   category: { select: { id: true, name: true, slug: true } },
   seller: { select: { id: true, name: true, shopName: true } },
   variants: { select: { id: true, size: true, color: true, stock: true } },
-}; 
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // READ — Public + Admin
@@ -290,7 +304,7 @@ export async function getCloudinarySignature() {
   const timestamp = Math.round(new Date().getTime() / 1000);
   const signature = cloudinary.utils.api_sign_request(
     { timestamp, folder: LUKKUU_FOLDERS.PRODUCTS },
-    process.env.CLOUDINARY_API_SECRET!
+    process.env.CLOUDINARY_API_SECRET!,
   );
 
   return {
@@ -342,12 +356,12 @@ export async function createProduct(data: CreateProductInput) {
       sellerId: data.sellerId,
       isFeatured: data.isFeatured ?? false,
       variants: {
-        create: data.variants.map(v => ({
+        create: data.variants.map((v) => ({
           size: v.size || null,
           color: v.color || null,
-          stock: v.stock !== undefined ? Number(v.stock) : undefined
-        }))
-      }
+          stock: v.stock !== undefined ? Number(v.stock) : undefined,
+        })),
+      },
     } as any,
   });
 
@@ -363,13 +377,34 @@ export type UpdateProductInput = Partial<
   isActive?: boolean;
 };
 
-export async function updateProduct(id: string, data: UpdateProductInput & { variants?: VariantInput[] }) {
+export async function updateProduct(
+  id: string,
+  data: UpdateProductInput & { variants?: VariantInput[] },
+) {
+  // Get current session
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" };
+  }
+
   const existing = await prisma.product.findUnique({
     where: { id },
-    select: { images: true, variants: true },
+    select: { images: true, variants: true, sellerId: true },
   });
 
   if (!existing) return { error: "Product not found." };
+
+  // Permission check: Admins can only edit their own products; sellers can only edit their own
+  if (session.user.role === "ADMIN" && existing.sellerId !== session.user.id) {
+    return { error: "Unauthorized: You can only edit products you uploaded." };
+  }
+
+  if (session.user.role === "SELLER" && existing.sellerId !== session.user.id) {
+    return { error: "Unauthorized: You can only edit your own products." };
+  }
 
   const payload: Record<string, any> = { ...data };
   if (data.name) {
@@ -379,10 +414,10 @@ export async function updateProduct(id: string, data: UpdateProductInput & { var
 
   if (data.images) {
     const finalImages: string[] = [];
-    
+
     // Identify images that were removed and delete them from Cloudinary
     const removedImages = existing.images.filter(
-      (oldImg) => !data.images!.includes(oldImg)
+      (oldImg) => !data.images!.includes(oldImg),
     );
     for (const img of removedImages) {
       await deleteFromCloudinary(img);
@@ -406,12 +441,12 @@ export async function updateProduct(id: string, data: UpdateProductInput & { var
 
   if (data.variants) {
     // 1. Delete variants removed from the list
-    const incomingIds = data.variants.map(v => v.id).filter(Boolean);
+    const incomingIds = data.variants.map((v) => v.id).filter(Boolean);
     await prisma.productVariant.deleteMany({
       where: {
         productId: id,
-        id: { notIn: incomingIds as string[] }
-      }
+        id: { notIn: incomingIds as string[] },
+      },
     });
 
     // 2. Upsert remaining/new variants
@@ -422,8 +457,8 @@ export async function updateProduct(id: string, data: UpdateProductInput & { var
           data: {
             size: v.size || null,
             color: v.color || null,
-            stock: v.stock !== undefined ? Number(v.stock) : undefined
-          }
+            stock: v.stock !== undefined ? Number(v.stock) : undefined,
+          },
         });
       } else {
         await prisma.productVariant.create({
@@ -431,15 +466,19 @@ export async function updateProduct(id: string, data: UpdateProductInput & { var
             productId: id,
             size: v.size || null,
             color: v.color || null,
-            stock: v.stock !== undefined ? Number(v.stock) : undefined
-          }
+            stock: v.stock !== undefined ? Number(v.stock) : undefined,
+          },
         });
       }
     }
   }
 
+  // Remove variants from payload before Prisma update — handled separately above
+  delete payload.variants;
+
   await prisma.product.update({ where: { id }, data: payload });
   revalidatePath("/admin/products");
+  revalidatePath("/seller/products");
   revalidatePath("/shop");
   return { success: true };
 }
@@ -466,6 +505,15 @@ export async function toggleProductField(
 }
 
 export async function deleteProduct(id: string) {
+  // Get current session
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" };
+  }
+
   // Prevent deleting a product that has been ordered
   const orderCount = await prisma.orderItem.count({ where: { productId: id } });
   if (orderCount > 0) {
@@ -476,8 +524,18 @@ export async function deleteProduct(id: string) {
 
   const existing = await prisma.product.findUnique({
     where: { id },
-    select: { images: true },
+    select: { images: true, sellerId: true },
   });
+
+  if (!existing) {
+    return { error: "Product not found." };
+  }
+
+  // Permission check: Sellers can only delete their own products
+  // Admins can delete any product
+  if (session.user.role === "SELLER" && existing.sellerId !== session.user.id) {
+    return { error: "Unauthorized: You can only delete your own products." };
+  }
 
   if (existing?.images) {
     for (const img of existing.images) {

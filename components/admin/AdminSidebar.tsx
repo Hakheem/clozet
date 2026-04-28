@@ -128,7 +128,7 @@ export default function AdminSidebar({ adminName = "Administrator" }: { adminNam
         </div>
 
         {/* ── Navigation ── */}
-        <nav className="relative z-10 flex-1 px-3 py-4 space-y-5">
+        <nav className="relative z-10 flex-1 px-3 overflow-y-auto py-4 space-y-4">
           {NAV_GROUPS.map((group) => (
             <div key={group.label}>
               <p

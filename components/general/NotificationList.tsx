@@ -78,7 +78,7 @@ export default function NotificationList() {
             </div>
             <div className="grid gap-3">
                 {notifications.map((notification) => (
-                    <Card key={notification.id} className={`${!notification.isRead ? 'border-primary/20 bg-primary/5' : ''}`}>
+                    <Card key={notification.id} className={`${!notification.isRead ? 'border-primary/20 bg-accent/5' : ''}`}>
                         <CardContent className="p-4 flex items-start gap-4">
                             <div className="mt-1">
                                 {getIcon(notification.type)}
@@ -93,7 +93,7 @@ export default function NotificationList() {
                                             onClick={() => handleMarkAsRead(notification.id)}
                                             className="text-xs text-primary hover:underline flex-shrink-0"
                                         >
-                                            Mark read
+                                            Mark as read
                                         </button>
                                     )}
                                 </div>

@@ -123,13 +123,6 @@ export default function SellerSidebar() {
                         </div>
                     </div>
 
-                    <Link 
-                        href="/" 
-                        className="mt-6 flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 group hover:bg-white/10 transition-all"
-                    >
-                        <span className="text-[10px] font-bold text-[#8A857D] uppercase tracking-widest">View Storefront</span>
-                        <ChevronRight className="w-3.5 h-3.5 text-[#BFA47A] group-hover:translate-x-0.5 transition-transform" />
-                    </Link>
                 </div>
 
                 {/* Navigation Links */}
@@ -180,11 +173,7 @@ export default function SellerSidebar() {
                         <LogOut className="w-4 h-4" />
                         End Session
                     </button>
-                    <div className="mt-4 flex items-center justify-center gap-4 opacity-20">
-                        <div className="w-8 h-[1px] bg-white" />
-                        <span className="text-[8px] font-bold text-white uppercase tracking-tighter">Lukuu v1.0</span>
-                        <div className="w-8 h-[1px] bg-white" />
-                    </div>
+                  
                 </div>
             </aside>
 

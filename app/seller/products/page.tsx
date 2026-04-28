@@ -5,17 +5,15 @@ import {
   Package, 
   Plus, 
   Search, 
-  SlidersHorizontal, 
   Eye, 
   EyeOff, 
-  Star, 
-  Layers,
-  Edit3,
+  Star,
+  Edit3, 
   Trash2,
-  ExternalLink,
   TrendingUp,
   AlertCircle,
-  Loader2
+  Loader2,
+  X
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,6 +29,12 @@ export default function SellerProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; productId: string; productName: string }>({
+    open: false,
+    productId: "",
+    productName: "",
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const sellerId = session?.user?.id;
 
@@ -40,7 +44,7 @@ export default function SellerProductsPage() {
     try {
       const result = await getProducts({
         sellerId,
-        isActive: undefined, // show all including hidden
+        isActive: undefined,
         pageSize: 100,
       });
       setProducts(result.products || []);
@@ -56,15 +60,30 @@ export default function SellerProductsPage() {
     }
   }, [sellerId]);
 
-  const handleDelete = async (productId: string, productName: string) => {
-    if (!confirm(`Are you sure you want to delete "${productName}"?`)) return;
-    const result = await deleteProduct(productId);
-    if (result.success) {
-      setProducts(products.filter(p => p.id !== productId));
-      toast.success("Product deleted successfully");
-    } else {
-      toast.error(result.error || "Failed to delete product");
+  const openDeleteDialog = (productId: string, productName: string) => {
+    setDeleteDialog({ open: true, productId, productName });
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialog({ open: false, productId: "", productName: "" });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteDialog.productId) return;
+    setIsDeleting(true);
+    try {
+      const result = await deleteProduct(deleteDialog.productId);
+      if (result.success) {
+        setProducts(products.filter(p => p.id !== deleteDialog.productId));
+        toast.success("Product deleted successfully");
+      } else {
+        toast.error(result.error || "Failed to delete product");
+      }
+    } catch (err) {
+      toast.error("Failed to delete product");
     }
+    setIsDeleting(false);
+    closeDeleteDialog();
   };
 
   const handleToggleActive = async (productId: string) => {
@@ -79,13 +98,11 @@ export default function SellerProductsPage() {
     }
   };
 
-  // Filter products by search
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.category?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Stats
   const activeCount = products.filter(p => p.isActive).length;
   const hiddenCount = products.filter(p => !p.isActive).length;
   const lowStockCount = products.filter(p => p.totalStock > 0 && p.totalStock < 5).length;
@@ -100,20 +117,20 @@ export default function SellerProductsPage() {
   }
 
   return (
-    <div className="p-8 space-y-10 min-h-full">
+    <div className="p-8 space-y-10 min-h-full" style={{ background: "#F7F5F2" }}>
       {/* Header Section */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
           <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#BFA47A]">
-            — Portfolio Management
+            — Product Management
           </p>
-          <h1 className="text-4xl font-light text-[#1C1A17] title">
-            Your <span className="font-normal">Inventory</span>
+          <h1 className="text-4xl font-light title">
+            Your <span className="font-normal  ">Inventory</span>
           </h1>
         </div>
         <Link 
           href="/seller/products/new"
-          className="flex items-center gap-2 px-6 py-3 bg-[#1C1A17] text-[#EDE8DF] rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[#2C2A27] transition-all shadow-lg shadow-black/5"
+          className="flex items-center gap-2 px-6 py-3 bg-primary text-[#EDE8DF] rounded-md text-xs font-bold uppercase tracking-widest hover:bg-[#2C2A27] transition-all shadow shadow-black/5"
         >
           <Plus className="w-4 h-4" />
           List New Item
@@ -133,7 +150,7 @@ export default function SellerProductsPage() {
              initial={{ opacity: 0, scale: 0.95 }}
              animate={{ opacity: 1, scale: 1 }}
              transition={{ delay: i * 0.05 }}
-             className={`flex items-center gap-4 p-4 rounded-2xl border border-[#E4E0D9] bg-white group hover:border-[#BFA47A] transition-all`}
+             className={`flex items-center gap-4 p-4 rounded-xl border border-[#E4E0D9] bg-white group hover:border-[#BFA47A] transition-all`}
            >
              <div className={`p-2.5 rounded-xl ${stat.bg}`}>
                <stat.icon className={`w-4 h-4 ${stat.color}`} />
@@ -147,12 +164,12 @@ export default function SellerProductsPage() {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-[#E4E0D9] flex flex-col md:flex-row items-center gap-4 shadow-sm">
+      <div className="bg-white p-4 rounded-xl border border-[#E4E0D9] flex flex-col md:flex-row items-center gap-4 shadow-sm">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8A857D]" />
           <Input 
             placeholder="Search your collection..." 
-            className="pl-12 bg-[#F7F5F2] border-none h-12 rounded-2xl text-xs font-medium"
+            className="pl-12 bg-[#F7F5F2] border-none h-12 rounded-xl text-xs font-medium"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -165,132 +182,185 @@ export default function SellerProductsPage() {
         </div>
       </div>
 
-      {/* Inventory List */}
+      {/* Inventory Table  */}
       {filteredProducts.length === 0 ? (
-        <div className="text-center py-16">
-          <Package className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500 font-medium">
-            {products.length === 0 ? "No products listed yet." : "No products match your search."}
+        <div className="flex flex-col items-center justify-center py-20 rounded-2xl text-center bg-white" style={{ border: "1px solid #E4E0D9" }}>
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: "rgba(191,164,122,0.08)", border: "1px solid rgba(191,164,122,0.15)" }}>
+            <Package className="w-5 h-5" style={{ color: "#BFA47A" }} />
+          </div>
+          <p className="text-sm font-medium mb-1" style={{ color: "#1C1A17" }}>
+            {products.length === 0 ? "No products listed yet" : "No products match your search"}
+          </p>
+          <p className="text-xs mb-5" style={{ color: "#8A857D", maxWidth: "24ch" }}>
+            {products.length === 0
+              ? "Add the first product to start building your inventory."
+              : "Try adjusting your search terms."}
           </p>
           {products.length === 0 && (
-            <Link
-              href="/seller/products/new"
-              className="inline-flex items-center gap-2 mt-4 px-6 py-3 bg-[#1C1A17] text-[#EDE8DF] rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[#2C2A27] transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              List Your First Item
+            <Link href="/seller/products/new">
+              <span className="inline-flex items-center gap-2 px-4 h-9 rounded-lg text-sm font-semibold" style={{ background: "#1C1A17", color: "#F7F5F2" }}>
+                <Plus className="w-3.5 h-3.5" /> List Your First Item
+              </span>
             </Link>
           )}
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="hidden lg:grid grid-cols-[80px_1fr_150px_120px_120px_150px] gap-6 px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#8A857D]">
-            <span>Image</span>
-            <span>Product Identity</span>
-            <span>Category</span>
-            <span>Price</span>
-            <span>Stock</span>
-            <span className="text-right">Manage</span>
+        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #E4E0D9" }}>
+          {/* Header row */}
+          <div
+            className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_120px] gap-4 px-5 py-2.5"
+            style={{ background: "#F7F5F2", borderBottom: "1px solid #E4E0D9" }}
+          >
+            {["Product", "Category", "Status", "Price", "Stock", ""].map(h => (
+              <span key={h} className="text-[0.6rem] uppercase tracking-[0.18em] font-semibold" style={{ color: "#8A857D" }}>{h}</span>
+            ))}
           </div>
 
-          <AnimatePresence>
-            {filteredProducts.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-white border border-[#E4E0D9] rounded-3xl p-4 lg:px-10 lg:py-6 group hover:border-[#1C1A17] transition-all relative overflow-hidden"
-              >
-                <div className="grid grid-cols-1 lg:grid-cols-[80px_1fr_150px_120px_120px_150px] gap-6 items-center">
-                  {/* Visual */}
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden border border-[#F7F5F2] relative bg-[#F7F5F2]">
-                     {p.images?.[0] ? (
-                       <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                     ) : (
-                       <div className="w-full h-full flex items-center justify-center text-gray-400">
-                         <Package className="w-6 h-6" />
-                       </div>
-                     )}
-                     {p.isFeatured && (
-                       <div className="absolute top-1 right-1 p-1 bg-[#1C1A17] rounded-full">
-                         <Star className="w-2.5 h-2.5 text-[#BFA47A] fill-[#BFA47A]" />
-                       </div>
-                     )}
+          {/* Rows */}
+          {filteredProducts.map((p, i) => (
+            <div
+              key={p.id}
+              className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_120px] gap-4 items-center px-5 py-3.5"
+              style={{
+                background: "#FFFFFF",
+                borderBottom: i < filteredProducts.length - 1 ? "1px solid #F0EDE8" : "none",
+              }}
+            >
+              {/* Name + image */}
+              <div className="flex items-center gap-3 min-w-0">
+                {p.images?.[0] ? (
+                  <img src={p.images[0]} alt="" className="w-9 h-9 rounded object-cover flex-shrink-0" style={{ border: "1px solid #E4E0D9" }} />
+                ) : (
+                  <div className="w-9 h-9 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#F7F5F2", border: "1px solid #E4E0D9" }}>
+                    <Package className="w-4 h-4" style={{ color: "#8A857D" }} />
                   </div>
-
-                  {/* Identity */}
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-[#1C1A17] truncate">{p.name}</h4>
-                    <div className="flex items-center gap-2">
-                       <Badge variant="outline" className={`text-[9px] uppercase tracking-tighter ${p.isActive ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-[#F7F5F2] text-[#8A857D] border-[#E4E0D9]"}`}>
-                        {p.isActive ? "Active" : "Hidden"}
-                      </Badge>
-                      <span className="text-[10px] text-[#8A857D]">#{p.id.slice(0, 8)}</span>
-                    </div>
-                  </div>
-
-                  {/* Category */}
-                  <span className="text-xs font-bold text-[#8A857D] uppercase tracking-widest">{p.category?.name || "—"}</span>
-
-                  {/* Price */}
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-[#1C1A17]">KES {p.price.toLocaleString()}</span>
-                    {p.discountPrice && (
-                      <span className="text-[9px] text-red-500 font-bold">Sale: KES {p.discountPrice.toLocaleString()}</span>
-                    )}
-                  </div>
-
-                  {/* Stock Level */}
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${p.totalStock === 0 ? "bg-[#DC2626]" : p.totalStock < 5 ? "bg-amber-500" : "bg-emerald-500"}`} />
-                      <span className="text-sm font-bold text-[#1C1A17]">{p.totalStock}</span>
-                    </div>
-                    <span className="text-[9px] text-[#8A857D] uppercase font-bold tracking-tight">In Stock</span>
-                  </div>
-
-                  {/* Action Block */}
-                  <div className="flex items-center justify-end gap-2">
-                     <button
-                       onClick={() => handleToggleActive(p.id)}
-                       className="p-3 rounded-full hover:bg-[#F7F5F2] text-[#8A857D] hover:text-[#1C1A17] transition-all"
-                       title={p.isActive ? "Hide Product" : "Show Product"}
-                     >
-                       {p.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                     </button>
-                     <Link 
-                      href={`/seller/products/edit/${p.id}`}
-                      className="p-3 rounded-full hover:bg-[#F7F5F2] text-[#8A857D] hover:text-[#1C1A17] transition-all"
-                      title="Edit Product"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </Link>
-                    <button 
-                      onClick={() => handleDelete(p.id, p.name)}
-                      className="p-3 rounded-full hover:bg-red-50 text-[#8A857D] hover:text-[#DC2626] transition-all" 
-                      title="Delete listing"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    <Link
-                      href={`/shop/${p.category?.slug}/${p.slug}`}
-                      target="_blank"
-                      className="p-3 rounded-full hover:bg-[#BFA47A]/10 text-[#BFA47A] transition-all"
-                      title="View in Store"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </Link>
-                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate" style={{ color: "#1C1A17" }}>{p.name}</p>
+                  <p className="text-xs truncate" style={{ color: "#8A857D" }}>/{p.slug}</p>
                 </div>
+                {p.isFeatured && (
+                  <Star className="w-3 h-3 flex-shrink-0" style={{ color: "#BFA47A" }} />
+                )}
+              </div>
 
-                {/* Interaction Overlay */}
-                <div className="absolute left-0 top-0 h-full w-[2px] bg-[#BFA47A] scale-y-0 group-hover:scale-y-100 transition-transform origin-top duration-500" />
-              </motion.div>
-            ))}
-          </AnimatePresence>
+              <span className="text-xs px-2 py-1 rounded-md w-fit" style={{ background: "#F7F5F2", color: "#8A857D", border: "1px solid #E4E0D9" }}>
+                {p.category?.name || "—"}
+              </span>
+
+              <span className="text-xs px-2 py-1 rounded-md w-fit font-medium" style={{
+                background: p.isActive ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)",
+                color: p.isActive ? "#16A34A" : "#DC2626",
+                border: `1px solid ${p.isActive ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)"}`,
+              }}>
+                {p.isActive ? "Active" : "Hidden"}
+              </span>
+
+              <span className="text-sm font-medium" style={{ color: "#1C1A17" }}>
+                KES {p.price.toLocaleString()}
+                {p.discountPrice && (
+                  <span className="block text-[0.65rem] line-through text-[#8A857D]">
+                    KES {p.discountPrice.toLocaleString()}
+                  </span>
+                )}
+              </span>
+
+              <span className="text-sm font-medium" style={{ color: p.totalStock > 0 ? "#1C1A17" : "#DC2626" }}>
+                {p.totalStock}
+                <span className="text-[0.6rem] text-[#8A857D] ml-1 block font-normal">
+                  {p.variants?.length || 0} variant(s)
+                </span>
+              </span>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleToggleActive(p.id)}
+                  className="cursor-pointer p-2 rounded-lg transition-colors"
+                  style={{ color: "#8A857D" }}
+                  title={p.isActive ? "Hide Product" : "Show Product"}
+                >
+                  {p.isActive ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                </button> 
+                <Link 
+                  href={`/seller/products/${p.id}`}
+                  className="p-2 rounded-lg transition-colors hover:text-[#BFA47A]"
+                  style={{ color: "#8A857D" }}
+                  title="Edit Product"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                </Link>
+                <button 
+                  onClick={() => openDeleteDialog(p.id, p.name)}
+                  className="p-2 cursor-pointer rounded-lg transition-colors hover:text-[#DC2626]"
+                  style={{ color: "#8A857D" }}
+                  title="Delete listing"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AnimatePresence>
+        {deleteDialog.open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            onClick={closeDeleteDialog}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", duration: 0.3 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl"
+              style={{ border: "1px solid #E4E0D9" }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold" style={{ color: "#1C1A17" }}>Delete Product</h3>
+                <button 
+                  onClick={closeDeleteDialog}
+                  className="p-1 rounded-lg hover:bg-[#F7F5F2] transition-colors"
+                >
+                  <X className="w-4 h-4" style={{ color: "#8A857D" }} />
+                </button>
+              </div>
+              <p className="text-xs leading-relaxed mb-6" style={{ color: "#8A857D" }}>
+                Are you sure you want to delete <strong style={{ color: "#1C1A17" }}>"{deleteDialog.productName}"</strong>? This action cannot be undone.
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={closeDeleteDialog}
+                  className="flex-1 h-10 rounded-xl text-xs font-semibold transition-all"
+                  style={{ background: "#F7F5F2", color: "#1C1A17", border: "1px solid #E4E0D9" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex-1 h-10 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2"
+                  style={{ background: "#DC2626", color: "#FFFFFF" }}
+                >
+                  {isDeleting ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  )}
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Narrative Footer */}
       <div className="bg-[#1C1A17] p-10 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-10">
@@ -300,7 +370,7 @@ export default function SellerProductsPage() {
             Featured products receive 3x more engagement. Hand-select items to highlight at the top of your shop.
           </p>
         </div>
-        <Button className="bg-[#BFA47A] hover:bg-[#B09366] text-[#1C1A17] h-14 px-10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] gap-2">
+        <Button className="bg-[#BFA47A] hover:bg-[#B09366] text-white h-14 px-10 rounded-md text-[10px] font-black uppercase tracking-[0.2em] gap-2">
           Promote Selection
           <TrendingUp className="w-4 h-4" />
         </Button>
@@ -308,3 +378,4 @@ export default function SellerProductsPage() {
     </div>
   );
 }
+

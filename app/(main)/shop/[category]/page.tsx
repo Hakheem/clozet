@@ -19,6 +19,7 @@ import ShopFilters from "@/components/shop/ShopFilters";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { makeShopUrl } from "@/lib/shop-url-builder";
 
 const PAGE_SIZE = 24;
 
@@ -26,7 +27,7 @@ const PAGE_SIZE = 24;
 
 export async function generateMetadata({
   params,
-}: { 
+}: {
   params: Promise<{ category: string }>;
 }): Promise<Metadata> {
   const awaitedParams = await params;
@@ -76,15 +77,6 @@ export default async function CategoryPage({
   ]);
 
   const { products, total, totalPages } = result;
-
-  function makeUrl(updates: Record<string, string | undefined>) {
-    const p = new URLSearchParams(awaitedSearchParams as Record<string, string>);
-    Object.entries(updates).forEach(([k, v]) => {
-      if (v === undefined) p.delete(k); else p.set(k, v);
-    });
-    p.set("page", updates.page ?? "1");
-    return `/shop/${awaitedParams.category}?${p.toString()}`;
-  }
 
   return (
     <div className='min-h-screen flex flex-col'>
@@ -139,7 +131,7 @@ export default async function CategoryPage({
         <ShopFilters
           categories={categories}
           searchParams={{ ...awaitedSearchParams, category: awaitedParams.category }}
-          makeUrl={makeUrl}
+          baseUrl={`/shop/${awaitedParams.category}`}
         />
 
         <main className="flex-1 px-6 md:px-8 py-8">
@@ -151,7 +143,7 @@ export default async function CategoryPage({
               { value: "MEN", label: "Men" },
               { value: "UNISEX", label: "Unisex" },
             ].map(g => (
-              <Link key={g.label} href={makeUrl({ gender: g.value })}>
+              <Link key={g.label} href={makeShopUrl(`/shop/${awaitedParams.category}`, awaitedSearchParams, { gender: g.value })}>
                 <span
                   className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
                   style={{
@@ -188,13 +180,13 @@ export default async function CategoryPage({
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-1.5 mt-12">
               {page > 1 && (
-                <PageLink href={makeUrl({ page: String(page - 1) })} label="← Prev" />
+                <PageLink href={makeShopUrl(`/shop/${awaitedParams.category}`, awaitedSearchParams, { page: String(page - 1) })} label="← Prev" />
               )}
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <PageLink key={p} href={makeUrl({ page: String(p) })} label={String(p)} active={p === page} />
+                <PageLink key={p} href={makeShopUrl(`/shop/${awaitedParams.category}`, awaitedSearchParams, { page: String(p) })} label={String(p)} active={p === page} />
               ))}
               {page < totalPages && (
-                <PageLink href={makeUrl({ page: String(page + 1) })} label="Next →" />
+                <PageLink href={makeShopUrl(`/shop/${awaitedParams.category}`, awaitedSearchParams, { page: String(page + 1) })} label="Next →" />
               )}
             </div>
           )}

@@ -174,7 +174,7 @@ export default function UserDropdown() {
                   onClick={() => setIsOpen(false)}
                 />
                 <MenuItem
-                  href="/notifications"
+                  href="/profile/notifications"
                   icon={<Bell className="h-3.5 w-3.5" />}
                   label="Notifications"
                   onClick={() => setIsOpen(false)}

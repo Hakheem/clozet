@@ -3,7 +3,7 @@
 import Container from "@/components/layout/Container";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, MapPin, ShoppingBag, LogOut } from "lucide-react";
+import { User, MapPin, ShoppingBag, LogOut, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authClient, useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -25,6 +25,7 @@ const navItems = [
     { name: "My Profile", href: "/profile", icon: User },
     { name: "Delivery Addresses", href: "/profile/addresses", icon: MapPin },
     { name: "Order History", href: "/profile/orders", icon: ShoppingBag },
+    { name: "Notifications", href: "/profile/notifications", icon: Bell },
 ];
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {

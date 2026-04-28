@@ -9,6 +9,7 @@ import { SlidersHorizontal, PackageSearch } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import Container from "@/components/layout/Container";
+import { makeShopUrl } from "@/lib/shop-url-builder";
 
 
 export const metadata: Metadata = {
@@ -47,16 +48,6 @@ export default async function ShopPage({
     awaitedSearchParams.search || awaitedSearchParams.min || awaitedSearchParams.max
   );
 
-  // Canonical URL builder for pagination / filter links
-  function makeUrl(updates: Record<string, string | undefined>) {
-    const p = new URLSearchParams(awaitedSearchParams as Record<string, string>);
-    Object.entries(updates).forEach(([k, v]) => {
-      if (v === undefined) p.delete(k); else p.set(k, v);
-    });
-    p.set("page", updates.page ?? "1");
-    return `/shop?${p.toString()}`;
-  }
-
   return (
     <Container className="mx-auto " >
 
@@ -84,7 +75,7 @@ export default async function ShopPage({
         <ShopFilters
           categories={categories}
           searchParams={awaitedSearchParams}
-          makeUrl={makeUrl}
+          baseUrl="/shop"
         />
 
         {/* ── Product grid ─────────────────────────────────────── */}
@@ -95,13 +86,13 @@ export default async function ShopPage({
             {/* Active filter chips */}
             <div className="flex flex-wrap items-center gap-2">
               {awaitedSearchParams.category && (
-                <FilterChip label={`Category: ${awaitedSearchParams.category}`} href={makeUrl({ category: undefined })} />
+                <FilterChip label={`Category: ${awaitedSearchParams.category}`} href={makeShopUrl("/shop", awaitedSearchParams, { category: undefined })} />
               )}
               {awaitedSearchParams.gender && (
-                <FilterChip label={`Gender: ${awaitedSearchParams.gender}`} href={makeUrl({ gender: undefined })} />
+                <FilterChip label={`Gender: ${awaitedSearchParams.gender}`} href={makeShopUrl("/shop", awaitedSearchParams, { gender: undefined })} />
               )}
               {awaitedSearchParams.search && (
-                <FilterChip label={`"${awaitedSearchParams.search}"`} href={makeUrl({ search: undefined })} />
+                <FilterChip label={`"${awaitedSearchParams.search}"`} href={makeShopUrl("/shop", awaitedSearchParams, { search: undefined })} />
               )}
               {hasActiveFilters && (
                 <Link href="/shop" className="text-xs underline text-muted-foreground">
@@ -111,7 +102,7 @@ export default async function ShopPage({
             </div>
 
             {/* Sort select */}
-            <SortSelect value={awaitedSearchParams.sort ?? "newest"} makeUrl={makeUrl} />
+            <SortSelect value={awaitedSearchParams.sort ?? "newest"} searchParams={awaitedSearchParams} baseUrl="/shop" />
           </div>
 
           {products.length === 0 ? (
@@ -128,18 +119,18 @@ export default async function ShopPage({
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-1.5 mt-12">
               {page > 1 && (
-                <PageLink href={makeUrl({ page: String(page - 1) })} label="← Prev" />
+                <PageLink href={makeShopUrl("/shop", awaitedSearchParams, { page: String(page - 1) })} label="← Prev" />
               )}
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
                 <PageLink
                   key={p}
-                  href={makeUrl({ page: String(p) })}
+                  href={makeShopUrl("/shop", awaitedSearchParams, { page: String(p) })}
                   label={String(p)}
                   active={p === page}
                 />
               ))}
               {page < totalPages && (
-                <PageLink href={makeUrl({ page: String(page + 1) })} label="Next →" />
+                <PageLink href={makeShopUrl("/shop", awaitedSearchParams, { page: String(page + 1) })} label="Next →" />
               )}
             </div>
           )}
@@ -166,10 +157,13 @@ function FilterChip({ label, href }: { label: string; href: string }) {
 }
 
 function SortSelect({
-  value, makeUrl,
+  value,
+  searchParams,
+  baseUrl,
 }: {
   value: string;
-  makeUrl: (u: Record<string, string | undefined>) => string;
+  searchParams: Record<string, string>;
+  baseUrl: string;
 }) {
   const options = [
     { value: "newest", label: "Newest" },
@@ -183,7 +177,7 @@ function SortSelect({
       <span>Sort:</span>
       <div className="flex gap-1">
         {options.map(o => (
-          <Link key={o.value} href={makeUrl({ sort: o.value })}>
+          <Link key={o.value} href={makeShopUrl(baseUrl, searchParams, { sort: o.value })}>
             <span
               className={`px-2.5 py-1 rounded-lg transition-all ${value === o.value
                 ? "bg-foreground text-background border border-foreground"

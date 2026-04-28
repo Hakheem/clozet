@@ -1,21 +1,11 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// FILE: app/admin/products/page.tsx
-//
-// Admin products list.
-// Reads filters from URL searchParams (server component) → passes to action.
-// Pagination via ?page=N, filter via ?category=, ?gender=, ?search=, ?sort=
-//
-// Related files:
-//   app/admin/products/new/page.tsx        → TODO: create product form
-//   app/admin/products/[id]/page.tsx       → TODO: edit product form
-//   lib/actions/products.actions.ts        → all queries live here
-// ─────────────────────────────────────────────────────────────────────────────
 
-import { 
+import {
   getProducts,
   getCategoriesWithCounts,
   type ProductWithCategory,
 } from "@/actions/products";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import { Package, Plus, Search, SlidersHorizontal, Eye, EyeOff, Star, Layers } from "lucide-react";
 import Link from "next/link";
 import AdminProductToggle from "@/components/admin/AdminProductToggle";
@@ -45,6 +35,12 @@ export default async function AdminProductsPage({
   const awaitedSearchParams = await searchParams;
   const page = Number(awaitedSearchParams.page ?? 1);
   const pageSize = 20;
+
+  // Get current user session
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  const currentUserId = session?.user?.id;
 
   const [result, categories] = await Promise.all([
     getProducts({
@@ -123,7 +119,7 @@ export default async function AdminProductsPage({
           {/* Category filter */}
           <FilterSelect
             label="Category"
-            value={awaitedSearchParams.category ?? ""} 
+            value={awaitedSearchParams.category ?? ""}
             paramKey="category"
             options={[
               { value: "", label: "All categories" },
@@ -153,7 +149,7 @@ export default async function AdminProductsPage({
           />
 
           {/* Active toggle */}
-           <Link
+          <Link
             href={filterUrl({ active: awaitedSearchParams.active === "true" ? "false" : (awaitedSearchParams.active === "false" ? undefined : "true") })}
             className="inline-flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs font-medium transition-colors"
             style={{
@@ -240,12 +236,14 @@ export default async function AdminProductsPage({
                 {/* Actions */}
                 <div className="flex items-center gap-2">
                   <AdminProductToggle productId={p.id} isActive={p.isActive} />
-                  <Link href={`/admin/products/${p.id}`}
-                    className="p-2 text-[#8A857D] hover:text-[#BFA47A] rounded-lg transition-colors"
-                    title="Edit product"
-                  >
-                    Edit
-                  </Link>
+                  {p.seller.id === currentUserId && (
+                    <Link href={`/admin/products/${p.id}`}
+                      className="p-2 text-[#8A857D] hover:text-[#BFA47A] rounded-lg transition-colors"
+                      title="Edit product"
+                    >
+                      Edit
+                    </Link>
+                  )}
                   <DeleteProductButton productId={p.id} productName={p.name} />
                 </div>
               </div>
