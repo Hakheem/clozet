@@ -12,7 +12,8 @@ import {
     Settings,
     Wallet,
     Store,
-    ChevronRight
+    ChevronRight,
+    Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,6 +78,11 @@ export default function SellerSidebar() {
             label: "Earnings",
             icon: Wallet,
             href: "/seller/earnings",
+        },
+        {
+            label: "Notifications",
+            icon: Bell,
+            href: "/seller/notifications",
         },
         {
             label: "Store Settings",

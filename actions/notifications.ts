@@ -53,6 +53,46 @@ export async function getMyNotifications() {
     }
 }
 
+export async function getAllNotifications(roleFilter?: string) {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers(),
+        });
+
+        if (!session?.user?.id || session.user.role !== "ADMIN") {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        const where: any = {};
+
+        // Filter by user role if specified
+        if (roleFilter && roleFilter !== "ALL") {
+            where.user = { role: roleFilter };
+        }
+
+        const notifications = await prisma.notification.findMany({
+            where,
+            orderBy: { createdAt: "desc" },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        role: true,
+                        image: true,
+                    },
+                },
+            },
+            take: 200, // Limit to last 200
+        });
+
+        return { success: true, notifications };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
 export async function markAsRead(notificationId: string) {
     try {
         const session = await auth.api.getSession({

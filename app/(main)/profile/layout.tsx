@@ -5,9 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User, MapPin, ShoppingBag, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { authClient } from "@/lib/auth-client";
+import { authClient, useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useEffect } from "react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -29,6 +30,14 @@ const navItems = [
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
+    const { data: session, isPending } = useSession();
+
+    // Redirect to login if not authenticated
+    useEffect(() => {
+        if (!isPending && !session) {
+            router.push("/login");
+        }
+    }, [isPending, session, router]);
 
     const handleSignOut = async () => {
         await authClient.signOut();

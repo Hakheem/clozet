@@ -81,8 +81,20 @@ export default function SellerEarnings() {
                 Withdraw Funds
             </Button>
             {stats.availableBalance < 700 && (
-                <p className="text-[10px] text-orange-400 mt-2 text-center">Minimum withdrawal: KES 700</p>
+                <p className="text-[10px] text-orange-400 mt-2 text-center">
+                  KES {(700 - stats.availableBalance).toLocaleString()} more to reach minimum withdrawal
+                </p>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">Lifetime Earnings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold" style={{ color: "#1C1A17" }}>KES {stats.lifetimeEarnings.toLocaleString()}</div>
+            <p className="text-xs text-gray-500 mt-1">Total earned ever</p>
           </CardContent>
         </Card>
 
@@ -96,16 +108,6 @@ export default function SellerEarnings() {
                 <Clock className="h-3 w-3" />
                 Held for 48h after delivery
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Lifetime Earnings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold" style={{ color: "#1C1A17" }}>KES {stats.lifetimeEarnings.toLocaleString()}</div>
-            <p className="text-xs text-gray-500 mt-1">Total earned ever</p>
           </CardContent>
         </Card>
       </div>

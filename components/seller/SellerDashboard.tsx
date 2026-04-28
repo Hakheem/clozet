@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Clock,
   CheckCircle,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -28,10 +29,19 @@ import {
 export default function SellerDashboard({ stats }: { stats: any }) {
   const summaryStats = [
     {
-      title: "Total Sales",
-      value: `KES ${stats.totalSales.toLocaleString()}`,
+      title: "Lifetime Earnings",
+      value: `KES ${(stats.lifetimeEarnings || 0).toLocaleString()}`,
       icon: DollarSign,
       href: "/seller/earnings",
+    },
+    {
+      title: "Available Balance",
+      value: `KES ${(stats.availableBalance || 0).toLocaleString()}`,
+      icon: Wallet,
+      href: "/seller/earnings",
+      subtitle: stats.availableBalance < 700
+        ? `KES ${(700 - (stats.availableBalance || 0)).toLocaleString()} more to withdraw`
+        : "Ready to withdraw",
     },
     {
       title: "Orders Received",
@@ -50,7 +60,7 @@ export default function SellerDashboard({ stats }: { stats: any }) {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {summaryStats.map((stat) => (
           <Link key={stat.title} href={stat.href}>
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -64,6 +74,9 @@ export default function SellerDashboard({ stats }: { stats: any }) {
                 <div className="text-2xl font-bold" style={{ color: "#1C1A17" }}>
                   {stat.value}
                 </div>
+                {stat.subtitle && (
+                  <p className="text-[10px] text-orange-500 mt-1">{stat.subtitle}</p>
+                )}
               </CardContent>
             </Card>
           </Link>
@@ -75,7 +88,7 @@ export default function SellerDashboard({ stats }: { stats: any }) {
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
             <TrendingUp className="h-5 w-5" style={{ color: "#BFA47A" }} />
-            Sales Performance (Last 7 Days)
+            Earnings from Completed Orders (Last 7 Days)
           </CardTitle>
         </CardHeader>
         <CardContent className="h-[350px]">

@@ -126,6 +126,14 @@ export async function getAllOrders() {
     }
 }
 
+// Status hierarchy for revert lock
+const STATUS_RANK: Record<string, number> = {
+    PENDING: 0,
+    CONFIRMED: 1,
+    SHIPPED: 2,
+    DELIVERED: 3,
+};
+
 export async function updateOrderItemStatus(orderItemId: string, status: any) {
     try {
         const session = await auth.api.getSession({
@@ -151,7 +159,26 @@ export async function updateOrderItemStatus(orderItemId: string, status: any) {
             return { success: false, error: "Unauthorized" };
         }
 
-        const data: any = { status };
+        // ── 30-minute revert lock (sellers only, admins bypass) ──
+        if (isSeller && !isAdmin) {
+            const currentRank = STATUS_RANK[orderItem.status] ?? 0;
+            const newRank = STATUS_RANK[status] ?? 0;
+
+            // Check if this is a revert (going backwards in status)
+            if (newRank < currentRank) {
+                const lastUpdated = orderItem.statusUpdatedAt || orderItem.order.createdAt;
+                const minutesSinceUpdate = (Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60);
+
+                if (minutesSinceUpdate > 30) {
+                    return {
+                        success: false,
+                        error: `Cannot revert status after 30 minutes. Status was last updated ${Math.round(minutesSinceUpdate)} minutes ago.`
+                    };
+                }
+            }
+        }
+
+        const data: any = { status, statusUpdatedAt: new Date() };
         if (status === "DELIVERED") {
             data.deliveredAt = new Date();
         }

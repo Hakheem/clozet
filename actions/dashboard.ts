@@ -88,15 +88,68 @@ export async function getSellerDashboardStats() {
             where: { sellerId: session.user.id }
         });
 
-        const myOrderItems = await prisma.orderItem.findMany({
-            where: { product: { sellerId: session.user.id } },
-            include: { order: true }
+        // Only count completed/delivered order items for totalSales
+        const deliveredItems = await prisma.orderItem.findMany({
+            where: {
+                product: { sellerId: session.user.id },
+                status: "DELIVERED",
+            },
         });
 
-        const totalSales = myOrderItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-        const ordersCount = new Set(myOrderItems.map(item => item.orderId)).size;
+        const totalSales = deliveredItems.reduce(
+            (acc, item) => acc + (item.price * item.quantity), 0
+        );
 
-        // Chart data: Sales over last 7 days
+        // All order items for order count
+        const allOrderItems = await prisma.orderItem.findMany({
+            where: { product: { sellerId: session.user.id } },
+            select: { orderId: true }
+        });
+        const ordersCount = new Set(allOrderItems.map(item => item.orderId)).size;
+
+        // Wallet stats
+        const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
+
+        let wallet = await prisma.sellerWallet.findUnique({
+            where: { sellerId: session.user.id },
+            include: { transactions: true }
+        });
+
+        let lifetimeEarnings = 0;
+        let availableBalance = 0;
+        let pendingEarnings = 0;
+
+        if (wallet) {
+            lifetimeEarnings = wallet.lifetimeEarnings;
+
+            // Cleared items (delivered > 48h)
+            const clearedItems = await prisma.orderItem.findMany({
+                where: {
+                    product: { sellerId: session.user.id },
+                    status: "DELIVERED",
+                    deliveredAt: { lte: cutoff },
+                }
+            });
+            const totalCleared = clearedItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+            const payouts = wallet.transactions
+                .filter(t => t.type === "PAYOUT" && t.status !== "FAILED")
+                .reduce((acc, t) => acc + t.amount, 0);
+            availableBalance = Math.max(0, totalCleared - payouts);
+
+            // Pending items
+            const pendingItems = await prisma.orderItem.findMany({
+                where: {
+                    product: { sellerId: session.user.id },
+                    OR: [
+                        { status: "DELIVERED", deliveredAt: { gt: cutoff } },
+                        { status: { in: ["SHIPPED", "CONFIRMED", "PENDING"] } }
+                    ]
+                }
+            });
+            pendingEarnings = pendingItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        }
+
+        // Chart data: Earnings from DELIVERED orders over last 7 days
         const last7Days = eachDayOfInterval({
             start: subDays(new Date(), 6),
             end: new Date(),
@@ -106,11 +159,10 @@ export async function getSellerDashboardStats() {
             const items = await prisma.orderItem.findMany({
                 where: {
                     product: { sellerId: session.user.id },
-                    order: {
-                        createdAt: {
-                            gte: startOfDay(day),
-                            lte: endOfDay(day),
-                        }
+                    status: "DELIVERED",
+                    deliveredAt: {
+                        gte: startOfDay(day),
+                        lte: endOfDay(day),
                     }
                 }
             });
@@ -129,7 +181,10 @@ export async function getSellerDashboardStats() {
                 myProductsCount,
                 totalSales,
                 ordersCount,
-                salesData
+                salesData,
+                lifetimeEarnings,
+                availableBalance,
+                pendingEarnings,
             }
         };
     } catch (error: any) {

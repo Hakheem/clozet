@@ -1,11 +1,8 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// FILE: components/shop/ShopFilters.tsx
-//
-// Left sidebar with category links, gender filter, price range.
-// Receives makeUrl from the parent page so it doesn't need to know the route.
-// ─────────────────────────────────────────────────────────────────────────────
+"use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { SlidersHorizontal, X } from "lucide-react";
 
 type Category = { id: string; name: string; slug: string; productCount: number };
 
@@ -33,24 +30,22 @@ export default function ShopFilters({
   searchParams: Record<string, string>;
   makeUrl: (u: Record<string, string | undefined>) => string;
 }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
   const activeGender = searchParams.gender ?? "";
   const activeCategory = searchParams.category ?? "";
   const activeMin = searchParams.min ?? "";
   const activeMax = searchParams.max ?? "";
 
-  return (
-    <aside
-      className="hidden md:block w-56 flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-8 px-5 border-r border-border"
-    >
-
+  const filterContent = (
+    <>
       {/* Categories */}
       <FilterSection title="Category">
-        <Link href={makeUrl({ category: undefined })}>
+        <Link href={makeUrl({ category: undefined })} onClick={() => setMobileOpen(false)}>
           <FilterItem label="All" count={categories.reduce((a, c) => a + c.productCount, 0)}
             active={!activeCategory} />
         </Link>
         {categories.map(cat => (
-          <Link key={cat.slug} href={makeUrl({ category: cat.slug })}>
+          <Link key={cat.slug} href={makeUrl({ category: cat.slug })} onClick={() => setMobileOpen(false)}>
             <FilterItem label={cat.name} count={cat.productCount}
               active={activeCategory === cat.slug} />
           </Link>
@@ -60,7 +55,7 @@ export default function ShopFilters({
       {/* Gender */}
       <FilterSection title="For">
         {GENDERS.map(g => (
-          <Link key={g.value} href={makeUrl({ gender: g.value || undefined })}>
+          <Link key={g.value} href={makeUrl({ gender: g.value || undefined })} onClick={() => setMobileOpen(false)}>
             <FilterItem label={g.label} active={activeGender === g.value} />
           </Link>
         ))}
@@ -75,13 +70,60 @@ export default function ShopFilters({
             <Link
               key={r.label}
               href={makeUrl({ min: r.min?.toString(), max: r.max?.toString() })}
+              onClick={() => setMobileOpen(false)}
             >
               <FilterItem label={r.label} active={isActive} />
             </Link>
           );
         })}
       </FilterSection>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside
+        className="hidden md:block w-56 flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-8 px-5 border-r border-border"
+      >
+        {filterContent}
+      </aside>
+
+      {/* Mobile filter button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="md:hidden fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-white text-xs font-bold uppercase tracking-widest shadow-lg shadow-black/15 hover:bg-primary/90 transition-all"
+      >
+        <SlidersHorizontal className="w-4 h-4" />
+        Filters
+      </button>
+
+      {/* Mobile filter overlay */}
+      {mobileOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex flex-col">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          {/* Panel */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom duration-300">
+            <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-border">
+              <h3 className="text-sm font-bold uppercase tracking-widest">Filters</h3>
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="p-2 rounded-full hover:bg-accent/10 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="px-6 py-6">
+              {filterContent}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -116,4 +158,3 @@ function FilterItem({
     </span>
   );
 }
-

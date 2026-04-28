@@ -1,6 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Skip API routes, static files, and auth routes
+  if (
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/") ||
+    pathname === "/favicon.ico"
+  ) {
+    return NextResponse.next();
+  }
+
   try {
     const response = await fetch(
       `${request.nextUrl.origin}/api/auth/get-session`,
@@ -15,15 +26,14 @@ export async function proxy(request: NextRequest) {
     const session = sessionData?.session;
     const user = sessionData?.user;
     const role = user?.role;
-    const pathname = request.nextUrl.pathname;
 
     // 1. Define protected routes that REQUIRE a login
-    const protectedRoutes = ["/profile"];
+    const protectedRoutes = ["/profile", "/checkout"];
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
     // 2. Handle Unauthenticated Users
     if (!session) {
-      if (isProtectedRoute) {
+      if (isProtectedRoute || pathname.startsWith("/admin") || pathname.startsWith("/seller")) {
         return NextResponse.redirect(new URL("/login", request.url));
       }
       // If not a protected route, let them pass through to public pages
@@ -32,38 +42,60 @@ export async function proxy(request: NextRequest) {
 
     // 3. Handle Authenticated Users (Role-based Access Control)
     
-    // Redirect logged-in sellers/admins away from login page
-    if (pathname === "/login") {
+    // Redirect logged-in users away from login/register pages
+    if (pathname === "/login" || pathname === "/register") {
       const destination = role === "ADMIN" ? "/admin" : (role === "SELLER" ? "/seller" : "/");
       return NextResponse.redirect(new URL(destination, request.url));
     }
 
-    // Block sellers from accessing the root/home page if you want them on the dashboard
-    if (pathname === "/" && role === "SELLER") {
+    // ── SELLER restrictions ─────────────────────────────────────
+    if (role === "SELLER") {
+      // Allow seller routes
+      if (pathname.startsWith("/seller")) {
+        // Allow onboarding for sellers
+        if (pathname === "/seller/onboarding") {
+          return NextResponse.next();
+        }
+        return NextResponse.next();
+      }
+
+      // Block sellers from ALL public /* pages — they must stay in /seller/*
+      // (except /api which is already handled above)
       return NextResponse.redirect(new URL("/seller", request.url));
     }
 
-    // Admin-specific protection
-    if (pathname.startsWith("/admin") && role !== "ADMIN") {
+    // ── ADMIN restrictions ──────────────────────────────────────
+    if (role === "ADMIN") {
+      // Allow admin routes
+      if (pathname.startsWith("/admin")) {
+        return NextResponse.next();
+      }
+
+      // Block admins from ALL public /* pages — they must stay in /admin/*
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+
+    // ── USER (regular) restrictions ─────────────────────────────
+    // Block regular users from admin and seller routes
+    if (pathname.startsWith("/admin")) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
-    // Seller-specific protection (allow onboarding for USERS becoming SELLERS)
     if (pathname.startsWith("/seller")) {
-      if (pathname === "/seller/onboarding" && (role === "USER" || role === "SELLER")) {
+      // Allow users to access seller onboarding
+      if (pathname === "/seller/onboarding") {
         return NextResponse.next();
       }
-      if (role !== "SELLER" && role !== "ADMIN") {
-        return NextResponse.redirect(new URL("/", request.url));
-      }
+      return NextResponse.redirect(new URL("/", request.url));
     }
 
   } catch (e) {
-    // Only redirect to login on error if it's a protected route
-    const protectedRoutes = ["/profile"];
-    if (protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
+    // On error, only redirect for truly protected routes
+    const protectedRoutes = ["/profile", "/checkout", "/admin", "/seller"];
+    if (protectedRoutes.some(route => pathname.startsWith(route))) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
+    // For public routes, let them pass through even if session check fails
     return NextResponse.next();
   }
 
@@ -71,6 +103,14 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/admin/:path*", "/seller/:path*", "/checkout/:path*", "/profile/:path*"],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+  ],
 };
-

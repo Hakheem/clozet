@@ -78,7 +78,7 @@ export default async function ShopPage({
         </p>
       </div>
 
-      <div className="flex">
+      <div className="flex min-h-[60vh]">
 
         {/* ── Filter sidebar ───────────────────────────────────── */}
         <ShopFilters
@@ -88,7 +88,7 @@ export default async function ShopPage({
         />
 
         {/* ── Product grid ─────────────────────────────────────── */}
-        <main className="flex-1 w-full px-6  py-8">
+        <main className="flex-1 w-full px-6 py-8 min-h-[400px]">
 
           {/* Sort + active filters bar */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">

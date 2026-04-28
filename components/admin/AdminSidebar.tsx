@@ -14,6 +14,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  Bell,
 } from "lucide-react";
 import Logo from "@/components/layout/header/Logo";
 import { signOut } from "@/lib/auth-client";
@@ -36,6 +37,7 @@ const NAV_GROUPS = [
     label: "Overview",
     items: [
       { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+      { label: "Notifications", href: "/admin/notifications", icon: Bell },
     ],
   },
   {
