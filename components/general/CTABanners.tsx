@@ -11,44 +11,37 @@
 //   OVERLAY → full-bleed image, 50% linear gradient from right, text on right
 //   GRID    → left half image, right half text + button (no overlay)
 
-// components/general/CTABanners.tsx
-
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-// 1. Import your existing singleton instance
-// Update the path below to match where your prisma file is located (e.g., @/lib/db or @/lib/prisma)
-import { prisma } from "@/lib/prisma"; 
+import { prisma } from "@/lib/prisma";
+import Container from "../layout/Container";
 
 type Banner = {
-    id: string; 
-    title: string; 
-    subtitle: string | null; 
+    id: string;
+    title: string;
+    subtitle: string | null;
     buttonText: string | null;
-    buttonHref: string | null; 
-    image: string | null; 
+    buttonHref: string | null;
+    image: string | null;
     type: "GRID" | "OVERLAY";
     position: number;
 };
 
 async function getActiveBanners(): Promise<Banner[]> {
-    // 2. Simply use the shared 'prisma' instance directly.
-    // No 'new PrismaClient()' needed here!
     return prisma.banner.findMany({
         where: { isActive: true },
         orderBy: { position: "asc" },
         take: 2,
     }) as Promise<Banner[]>;
 }
+
 // ─── Overlay banner ───────────────────────────────────────────────────────────
-// Full-bleed background image with a 50% linear gradient from the right side.
-// Text and CTA sit on the dark gradient half.
 function OverlayBanner({ banner }: { banner: Banner }) {
     return (
         <div
             className="relative flex h-72 md:h-80 overflow-hidden rounded-xl"
             style={{ background: "#1C1A17" }}
         >
-            {/* Background image */}
             {banner.image && (
                 <div
                     className="absolute inset-0"
@@ -60,7 +53,6 @@ function OverlayBanner({ banner }: { banner: Banner }) {
                 />
             )}
 
-            {/* Gradient overlay — transparent left → dark right (50%) */}
             <div
                 className="absolute inset-0"
                 style={{
@@ -69,7 +61,6 @@ function OverlayBanner({ banner }: { banner: Banner }) {
                 }}
             />
 
-            {/* Grain */}
             <div
                 className="absolute inset-0 opacity-[0.04] pointer-events-none"
                 style={{
@@ -79,7 +70,6 @@ function OverlayBanner({ banner }: { banner: Banner }) {
                 }}
             />
 
-            {/* Text — anchored to the right half */}
             <div className="relative z-10 flex flex-col justify-end p-7 ml-auto w-full md:w-1/2">
                 <p
                     className="text-[0.6rem] uppercase tracking-[0.25em] font-semibold mb-2"
@@ -118,14 +108,12 @@ function OverlayBanner({ banner }: { banner: Banner }) {
 }
 
 // ─── Grid banner ─────────────────────────────────────────────────────────────
-// Left half: image. Right half: warm dark panel with text + CTA button.
 function GridBanner({ banner }: { banner: Banner }) {
     return (
         <div
             className="relative flex h-72 md:h-80 overflow-hidden rounded-xl"
             style={{ border: "1px solid #E4E0D9" }}
         >
-            {/* Left: image */}
             <div
                 className="w-1/2 flex-shrink-0 relative"
                 style={{ background: "#1C1A17" }}
@@ -140,7 +128,6 @@ function GridBanner({ banner }: { banner: Banner }) {
                         }}
                     />
                 )}
-                {/* Subtle right edge fade into the text panel */}
                 <div
                     className="absolute inset-y-0 right-0 w-12"
                     style={{
@@ -149,12 +136,10 @@ function GridBanner({ banner }: { banner: Banner }) {
                 />
             </div>
 
-            {/* Right: text panel */}
             <div
                 className="flex-1 flex flex-col justify-center px-7 py-6"
                 style={{ background: "#1C1A17" }}
             >
-                {/* Grain on the text panel */}
                 <div
                     className="absolute inset-0 opacity-[0.04] pointer-events-none"
                     style={{
@@ -217,14 +202,17 @@ export default async function CTABanners() {
     if (banners.length === 0) return null;
 
     return (
-        <section className="w-full">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {banners.map(banner =>
-                    banner.type === "GRID"
-                        ? <GridBanner key={banner.id} banner={banner} />
-                        : <OverlayBanner key={banner.id} banner={banner} />
-                )}
-            </div>
-        </section>
+        <Container>
+            <section className="w-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {banners.map(banner =>
+                        banner.type === "GRID"
+                            ? <GridBanner key={banner.id} banner={banner} />
+                            : <OverlayBanner key={banner.id} banner={banner} />
+                    )}
+                </div>
+            </section>
+        </Container>
     );
 }
+

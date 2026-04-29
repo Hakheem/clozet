@@ -99,14 +99,14 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
           className="relative overflow-hidden rounded-xl h-full flex flex-col bg-white border border-border transition-all duration-300 hover:shadow-xl hover:shadow-black/5"
         >
           {/* Image Section */}
-          <div className="relative h-[230px] lg:h-[280px] w-full max-w-[280px] overflow-hidden bg-[#EEE9E3]">
+          <div className="relative h-[230px] lg:h-[260px] w-full md:w-[280px] lg:w-[300px] overflow-hidden bg-[#EEE9E3]">
             <Link href={`/shop/${product.category.slug}/${product.slug}`}>
               {product.images.length > 0 ? (
                 <>
                   <img
                     src={product.images[0]}
                     alt={product.name}
-                    className={`w-full h-full object-cover transition-all duration-700 ${product.images.length > 1 ? "group-hover:opacity-0 group-hover:scale-105" : "group-hover:scale-105"
+                    className={`w-full h-full object-cover object-center transition-all duration-700 ${product.images.length > 1 ? "group-hover:opacity-0 group-hover:scale-105" : "group-hover:scale-105"
                       }`}
                   />
                   {product.images.length > 1 && (
@@ -119,7 +119,7 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
                 </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground">No image</span>
+                  <span className="text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground">Image Loading...</span>
                 </div>
               )}
             </Link>
@@ -143,7 +143,7 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
             )}
 
             {/* Hover Icons */}
-            <div className="absolute bottom-0 left-0 right-0 flex justify-center items-center gap-4 py-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-10 bg-white/90 backdrop-blur-md border-t border-border/50">
+            <div className="absolute bottom-0 left-0 right-0 flex justify-center items-center gap-4 py-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-10 bg-white backdrop-blur-md">
               <Tooltip>
                 <TooltipTrigger>
                   <button onClick={() => toggleFavorite(product.id)} className="cursor-pointer p-2.5 rounded-full bg-white border border-border hover:border-accent hover:bg-accent/5 transition-all shadow-sm">

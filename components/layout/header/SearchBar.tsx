@@ -76,7 +76,7 @@ const SearchBar = () => {
         }
       />
 
-      <DialogContent className='min-w-4xl h-[85vh] flex flex-col overflow-hidden rounded-xl p-0'>
+      <DialogContent className='w-full md:min-w-4xl h-[85vh] flex flex-col overflow-hidden rounded-xl p-0'>
         <DialogHeader className='px-6 pt-4 pb-4 border-b'>
           <DialogTitle className='text-2xl'>Search Products</DialogTitle>
           <p className='text-sm text-muted-foreground'>Find your perfect item by name or description</p>

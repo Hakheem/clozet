@@ -5,6 +5,7 @@ import { getCategoriesWithCounts } from "@/actions/products";
 import PremiumDeals from "@/components/general/PremiumDeals";
 import CTABanners from "@/components/general/CTABanners";
 import FeaturedGrid from "@/components/general/FeaturedGrid";
+import CTASection from "@/components/general/CTASection";
 
 export default async function Home() {
   const categories = await getCategoriesWithCounts();
@@ -12,12 +13,12 @@ export default async function Home() {
 
   return (
     <>
-      <Container className="pt-12 mx-auto pb-24">
+      <Container className="py-12 px-0 mx-auto">
         <Hero />
         <ProductTabs />
         <FeaturedGrid />
         <PremiumDeals />
-        <CTABanners />
+        <CTASection />
       </Container>
     </>
   );

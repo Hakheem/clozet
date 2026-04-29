@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn } from "@/lib/auth-client";
+import { signIn, useSession } from "@/lib/auth-client";
 import { useState } from "react";
 import { Loader2, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
 
 export default function SignInForm() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
@@ -46,8 +47,13 @@ export default function SignInForm() {
       });
       if (error) throw new Error(error.message);
       toast.success("Welcome back.");
-      router.push("/");
+
+      // Refresh session and get user role
+      await new Promise(resolve => setTimeout(resolve, 100)); // Wait a bit for session to update
       router.refresh();
+
+      // Redirect based on role - middleware will handle this, just go to home
+      router.push("/");
     } catch (error: any) {
       toast.error(error.message || "Failed to sign in");
     }

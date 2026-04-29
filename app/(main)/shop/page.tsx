@@ -65,7 +65,7 @@ export default async function ShopPage({
           <span className='text-gold'>.</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {total.toLocaleString()} items{total !== 1 ? "s" : ""} available
+          {total.toLocaleString()} item{total !== 1 ? "s" : ""} available
         </p>
       </div>
 
@@ -79,7 +79,7 @@ export default async function ShopPage({
         />
 
         {/* ── Product grid ─────────────────────────────────────── */}
-        <main className="flex-1 w-full px-6 py-8 min-h-[400px]">
+        <main className="flex-1 w-full px-0 md:px-4 py-8 min-h-[400px]">
 
           {/* Sort + active filters bar */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
@@ -174,7 +174,7 @@ function SortSelect({
   ];
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <span>Sort:</span>
+      <span className="hidden md:flex" >Sort:</span>
       <div className="flex gap-1">
         {options.map(o => (
           <Link key={o.value} href={makeShopUrl(baseUrl, searchParams, { sort: o.value })}>
@@ -195,7 +195,7 @@ function SortSelect({
 
 function ShopEmptyState({ hasFilters }: { hasFilters: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center py-24 text-center">
       <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-accent/8 border border-accent/15">
         <PackageSearch className="w-6 h-6 text-accent" />
       </div>

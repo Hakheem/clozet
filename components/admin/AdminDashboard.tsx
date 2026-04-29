@@ -27,7 +27,7 @@ import {
   Legend
 } from "recharts";
 
-const COLORS = ['#BFA47A', '#1C1A17', '#8A857D', '#E4E0D9', '#22C55E', '#EF4444'];
+const COLORS = ['#BFA47A', '#22C55E', '#8A857D', '#E4E0D9', '#1C1A17', '#EF4444'];
 
 export default function AdminDashboard({ stats }: { stats: any }) {
   const summaryStats = [
@@ -144,7 +144,6 @@ export default function AdminDashboard({ stats }: { stats: any }) {
         </Card>
       </div>
 
-      {/* Quick Actions and Activity could be added back here if desired */}
     </div>
   );
 }

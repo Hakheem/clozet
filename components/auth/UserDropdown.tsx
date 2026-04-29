@@ -56,9 +56,12 @@ export default function UserDropdown() {
     return (
       <Link
         href="/login"
-        className="inline-flex font-medium items-center px-1 text-sm transition-all duration-200 capitalize tracking-wide"
+        className="inline-flex font-medium items-center px-0 md:px-1 text-sm transition-all duration-200 capitalize tracking-wide"
       >
-        Login
+         <button className="cursor-pointer flex md:hidden relative p-2 hover:bg-[#BFA47A]/10 rounded-full transition-colors">
+            <User className='w-5 h-5 text-muted-foreground hover:text-primary' />
+          </button>
+        <span className="hidden md:inline">Login</span>
       </Link>
     );
   }

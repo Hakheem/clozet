@@ -23,7 +23,7 @@ const Header = () => {
       >
         Free shipping on orders over KES 3,000 &nbsp;·&nbsp; New drops every Friday
       </div>
-
+ 
       <div className="border-b border-[#E4E0D9] ">
         <Container className="flex items-center mx-auto justify-between py-4 md:grid md:grid-cols-3 gap-6">
 
@@ -33,14 +33,19 @@ const Header = () => {
 
           <div className="flex items-center justify-start md:justify-center gap-2">
             <MobileMenu />
-            <Logo size="md" />
+           {/* Logo for Mobile (sm)  */}
+  <Logo size="sm" className="md:hidden" />
+  {/* Logo for Desktop (md)  */}
+  <Logo size="md" className="hidden md:flex" />
           </div>
+ 
 
-
-          <div className="flex items-center gap-4 justify-end">
+          <div className="flex items-center gap-1 md:gap-3 justify-end">
             <div className="flex gap-1 items-center">
             <SearchBar />
-            <CompareBar />
+            <div className="hidden md:flex" >
+            <CompareBar  />
+            </div>
             <WishlistIcon />
             <CartSheet />
             </div>

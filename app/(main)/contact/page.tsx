@@ -13,30 +13,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import React from 'react';
+import { faqs } from '@/lib/static-data';
 
-const faqs = [
-  {
-    q: 'How long does delivery take?',
-    a: 'Within Nairobi, orders are delivered within 1–2 business days. Upcountry Kenya typically takes 3–5 business days depending on your location.',
-  },
-  {
-    q: 'What is your return policy?',
-    a: 'We accept returns within 7 days of delivery for unworn, tagged items. Reach out via email or WhatsApp and we will guide you through the process quickly.',
-  },
-  {
-    q: 'Do you accept custom or bulk orders?',
-    a: 'Yes — for events, gifting, or corporate dress. Contact us directly via email or phone and we will work out the details with you.',
-  },
-  {
-    q: 'How can I track my order?',
-    a: 'Once your order ships, you will receive a tracking link via email and SMS. You can also reach us on WhatsApp for real-time updates.',
-  },
-  {
-    q: 'Do you restock sold-out items?',
-    a: 'Some pieces are restocked, others are limited runs. Use the "Notify Me" button on any sold-out product page and we will email you if it comes back.',
-  },
-];
 
 const contactDetails = [
   {
@@ -62,10 +40,10 @@ const contactDetails = [
 ];
 
 const socials = [
-  { icon: LuInstagram, label: 'Instagram', handle: '@lukuufashion', href: '#' },
-  { icon: LuFacebook, label: 'Facebook', handle: 'Lukuu Fashion', href: '#' },
-  { icon: PiTiktokLogo, label: 'TikTok', handle: 'Lukuu', href: '#' },
-  { icon: MessageCircle, label: 'WhatsApp', handle: '+254 769 403162', href: '#' },
+  { icon: LuInstagram, label: 'Instagram', handle: '@lukuu.ea', href: 'https://www.instagram.com/lukuu.ea' },
+  { icon: LuFacebook, label: 'Facebook', handle: 'Lukuu Fashion', href: 'https://www.facebook.com/lukuu EA' },
+  { icon: PiTiktokLogo, label: 'TikTok', handle: 'Lukuu', href: 'https://www.tiktok.com/@lukuu' },
+  { icon: MessageCircle, label: 'WhatsApp', handle: '+254 769 403162', href: 'https://wa.me/254769403162' },
 ];
 
 const ContactPage = () => {
@@ -184,23 +162,24 @@ const ContactPage = () => {
               Quick answers to the things people ask us most. Still need help? Just send us a message above.
             </p>
           </div>
-          {/* Fix 2: Changed props to match Base UI as requested in previous turns */}
-          <Accordion multiple={false} className="space-y-3">
-            {faqs.map((faq, i) => (
-              <AccordionItem
-                key={i}
-                value={`faq-${i}`}
-                className="bg-card border border-border rounded-xl px-6 data-[state=open]:shadow-sm"
+        
+          <Accordion 
+                multiple={false} 
+                className="w-full" 
+                defaultValue={["item-0"]}
               >
-                <AccordionTrigger className="text-sm font-medium text-left hover:no-underline py-5">
-                  {faq.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground text-sm leading-relaxed pb-5">
-                  {faq.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+                {faqs.map((faq, index) => (
+                  <AccordionItem key={index} value={`item-${index}`} className="border-b border-gold-hairline">
+                    <AccordionTrigger className="py-4 text-left font-medium hover:text-[#BFA47A] transition-colors hover:no-underline">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-4 text-sm text-muted-foreground leading-relaxed">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+        
         </Container>
       </section>
 
@@ -211,7 +190,6 @@ const ContactPage = () => {
           <p className="text-primary-foreground/70 mb-6 text-sm">
             WhatsApp is the fastest way to reach us for order updates, styling advice or anything urgent.
           </p>
-          {/* Fix 3: Removed aschild since your Button component doesn't support it */}
           <Button variant="secondary" size="lg">
             <a href="https://wa.me/254769403162" target="_blank" rel="noreferrer" className="flex items-center">
               <MessageCircle className="w-4 h-4 mr-2" />

@@ -25,14 +25,14 @@ export const metadata: Metadata = {
   authors: [{ name: "Lukuu" }],
   creator: "Lukuu",
   publisher: "Lukuu",
-  metadataBase: new URL("https://your-domain.com"),
+  metadataBase: new URL("https://lukuu.onrender.com"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "Lukuu | Urban Streetwear & Contemporary Fashion",
     description: "Discover curated urban streetwear and contemporary fashion. Shop men's and women's clothing, shoes, and accessories.",
-    url: "https://your-domain.com",
+    url: "https://lukuu.onrender.com",
     siteName: "Lukuu",
     locale: "en_US",
     type: "website",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Lukuu | Urban Streetwear & Contemporary Fashion",
     description: "Discover curated urban streetwear and contemporary fashion. Shop the latest trends.",
-    creator: "@your-handle",
+    creator: "@hakheem67",
   },
   robots: {
     index: true,

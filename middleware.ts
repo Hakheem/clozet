@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Skip API routes, static files, and auth routes
@@ -11,7 +11,6 @@ export async function proxy(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
-
   try {
     const response = await fetch(
       `${request.nextUrl.origin}/api/auth/get-session`,

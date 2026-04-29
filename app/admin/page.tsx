@@ -29,11 +29,11 @@ export default async function AdminDashboardPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "#1C1A17" }}>
+        <h1 className="text-2xl font-bold" >
           Dashboard
         </h1>
-        <p className="text-sm mt-1" style={{ color: "#8A857D" }}>
-          Welcome back! Here's what's happening across the platform.
+        <p className="text-sm mt-1 text-muted-foreground ">
+          Welcome back. Here's what's happening across the platform.
         </p>
       </div>
 
@@ -45,7 +45,7 @@ export default async function AdminDashboardPage() {
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" style={{ color: "#BFA47A" }} />
+              <AlertCircle className="h-5 w-5 text-gold "  />
               Quick Actions
             </CardTitle>
           </CardHeader>
@@ -81,15 +81,15 @@ export default async function AdminDashboardPage() {
               href="/admin/orders"
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-[#E4E0D9]"
             >
-              <ShoppingBag className="h-4 w-4" style={{ color: "#BFA47A" }} />
-              <span className="text-sm font-medium" style={{ color: "#1C1A17" }}>
+              <ShoppingBag className="h-4 w-4 text-gold"  />
+              <span className="text-sm font-medium">
                 Process Orders
               </span>
             </Link>
           </CardContent>
         </Card>
 
-        {/* Note from user: User pages, sellers, orders, payouts and all, even settings with dynamic data and CRUD */}
+       
         <Card className="lg:col-span-2">
             <CardHeader>
                 <CardTitle className="text-lg font-semibold">Platform Health</CardTitle>
