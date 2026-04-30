@@ -42,18 +42,20 @@ export default function ShopFilters({
 
   const filterContent = (
     <>
-      {/* Categories */}
+      {/* Categories - Scrollable */}
       <FilterSection title="Category">
-        <Link href={makeUrl({ category: undefined })} onClick={() => setMobileOpen(false)}>
-          <FilterItem label="All" count={categories.reduce((a, c) => a + c.productCount, 0)}
-            active={!activeCategory} />
-        </Link>
-        {categories.map(cat => (
-          <Link key={cat.slug} href={makeUrl({ category: cat.slug })} onClick={() => setMobileOpen(false)}>
-            <FilterItem label={cat.name} count={cat.productCount}
-              active={activeCategory === cat.slug} />
+        <div className="max-h-[300px] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <Link href={makeUrl({ category: undefined })} onClick={() => setMobileOpen(false)}>
+            <FilterItem label="All" count={categories.reduce((a, c) => a + c.productCount, 0)}
+              active={!activeCategory} />
           </Link>
-        ))}
+          {categories.map(cat => (
+            <Link key={cat.slug} href={makeUrl({ category: cat.slug })} onClick={() => setMobileOpen(false)}>
+              <FilterItem label={cat.name} count={cat.productCount}
+                active={activeCategory === cat.slug} />
+            </Link>
+          ))}
+        </div>
       </FilterSection>
 
       {/* Gender */}
@@ -88,7 +90,7 @@ export default function ShopFilters({
     <>
       {/* Desktop sidebar */}
       <aside
-        className="hidden md:block w-56 flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-8 px-5 border-r border-border"
+        className="hidden md:block w-56 flex-shrink-0 sticky top-28 h-screen overflow-y-auto py-8 px-5 border-r border-border"
       >
         {filterContent}
       </aside>
@@ -133,7 +135,7 @@ export default function ShopFilters({
 
 function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="mb-7">
+    <div className="mb-6">
       <p className="text-[0.58rem] uppercase tracking-[0.22em] font-bold mb-3 text-muted-foreground">
         {title}
       </p>
@@ -162,3 +164,4 @@ function FilterItem({
     </span>
   );
 }
+

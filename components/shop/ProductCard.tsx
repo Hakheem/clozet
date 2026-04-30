@@ -99,7 +99,7 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
           className="relative overflow-hidden rounded-xl h-full flex flex-col bg-white border border-border transition-all duration-300 hover:shadow-xl hover:shadow-black/5"
         >
           {/* Image Section */}
-          <div className="relative h-[230px] lg:h-[260px] w-full md:w-[280px] lg:w-[300px] overflow-hidden bg-[#EEE9E3]">
+          <div className="relative h-[230px] lg:h-[260px] w-full md:w-[280px] lg:w-full lg:max-w-[290px] overflow-hidden bg-[#EEE9E3]">
             <Link href={`/shop/${product.category.slug}/${product.slug}`}>
               {product.images.length > 0 ? (
                 <>
@@ -238,7 +238,7 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
                   variant="outline"
                   onClick={handleAddToCart}
                   disabled={product.totalStock === 0}
-                  className="w-full md:w-auto h-9 flex items-center justify-center gap-1.5 px-4 text-[10px] uppercase tracking-widest font-bold rounded-lg border-[#E4E0D9] hover:bg-primary hover:text-white transition-all shadow-sm"
+                  className="w-full md:w-auto h-9 flex items-center justify-center gap-1.5 px-4 text-[10px] uppercase tracking-widest font-bold rounded-lg border-[#E4E0D9] hover:bg-primary hover:text-foreground transition-all shadow-sm"
                 >
                   <ShoppingCart className="w-3.5 h-3.5" />
                   {product.totalStock === 0 ? "Out of Stock" : "Add to cart"}
