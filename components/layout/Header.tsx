@@ -7,9 +7,13 @@ import CartSheet from '../general/CartSheet'
 import UserDropdown from '../auth/UserDropdown'
 import WishlistIcon from './header/WishlistIcon'
 import CompareBar from './header/CompareBar'
+import { getSiteContent } from '@/actions/contents'
 
 
-const Header = () => {
+export default async function Header() {
+  const content = await getSiteContent()
+  const announcementBar = content.announcement_bar || 'Free shipping on orders over KES 3,000 &nbsp;·&nbsp; New drops every Friday'
+
   return (
     <header className="sticky top-0 z-30 bg-background">
 
@@ -20,10 +24,9 @@ const Header = () => {
           color: 'rgba(191,164,122,0.9)',
           letterSpacing: '0.22em',
         }}
-      >
-        Free shipping on orders over KES 3,000 &nbsp;·&nbsp; New drops every Friday
-      </div>
- 
+        dangerouslySetInnerHTML={{ __html: announcementBar }}
+      />
+
       <div className="border-b border-[#E4E0D9] ">
         <Container className="flex items-center mx-auto justify-between py-4 md:grid md:grid-cols-3 gap-6">
 
@@ -33,21 +36,21 @@ const Header = () => {
 
           <div className="flex items-center justify-start md:justify-center gap-2">
             <MobileMenu />
-           {/* Logo for Mobile (sm)  */}
-  <Logo size="sm" className="md:hidden" />
-  {/* Logo for Desktop (md)  */}
-  <Logo size="md" className="hidden md:flex" />
+            {/* Logo for Mobile (sm)  */}
+            <Logo size="sm" className="md:hidden" />
+            {/* Logo for Desktop (md)  */}
+            <Logo size="md" className="hidden md:flex" />
           </div>
- 
+
 
           <div className="flex items-center gap-1 md:gap-3 justify-end">
             <div className="flex gap-1 items-center">
-            <SearchBar />
-            <div className="hidden md:flex" >
-            <CompareBar  />
-            </div>
-            <WishlistIcon />
-            <CartSheet />
+              <SearchBar />
+              <div className="hidden md:flex" >
+                <CompareBar />
+              </div>
+              <WishlistIcon />
+              <CartSheet />
             </div>
             <UserDropdown />
 
@@ -67,5 +70,3 @@ const Header = () => {
     </header>
   )
 }
-
-export default Header

@@ -3,6 +3,7 @@ import Container from '../layout/Container'
 import Title from './Title'
 import SocialIcons from './SocialIcons'
 import { Cormorant_Garamond } from 'next/font/google'
+import { getSiteContent } from '@/actions/contents'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -11,7 +12,12 @@ const cormorant = Cormorant_Garamond({
 })
 
 
-const Hero = () => {
+export default async function Hero() {
+  const content = await getSiteContent()
+
+  const heroHeadline = content.hero_headline || 'Be Seen, Be Remembered'
+  const heroSubtext = content.hero_subtext || 'Make every outfit count with pieces that elevate your presence, sharpen your look, and leave a lasting impression wherever you go.'
+
   return (
     <Container className={`mx-auto text-center ${cormorant.variable}`}>
 
@@ -45,7 +51,7 @@ const Hero = () => {
             className="text-[clamp(2rem,4.5vw,3rem)] text-foreground font-semibold leading-none tracking-tight"
             style={{ letterSpacing: '-0.02em' }}
           >
-            Be Seen, Be Remembered
+            {heroHeadline}
             <span className='text-accent'>.</span>
           </p>
 
@@ -55,7 +61,7 @@ const Hero = () => {
         <p
           className="text-center max-w-xl leading-relaxed text-muted-foreground text-sm md:text-base"
         >
-          Make every outfit count with pieces that elevate your presence, sharpen your look, and leave a lasting impression wherever you go.
+          {heroSubtext}
         </p>
 
       </div>
@@ -63,5 +69,3 @@ const Hero = () => {
     </Container>
   )
 }
-
-export default Hero

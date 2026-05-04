@@ -2,13 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
-import { updateProfile } from "@/actions/profile"; 
+import { updateProfile } from "@/actions/profile";
 import { Loader2, Save, Store, MapPin, Phone, Globe, CreditCard } from "lucide-react";
 import { LuFacebook, LuInstagram } from 'react-icons/lu'
 import { PiTiktokLogo } from "react-icons/pi";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -106,14 +113,24 @@ export default function SellerSettingsForm() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="payoutMethod">Payout Method</Label>
-              <Input id="payoutMethod" name="payoutMethod" value={formData.payoutMethod} onChange={handleChange} placeholder="e.g. M-Pesa" />
+              <Select value={formData.payoutMethod} onValueChange={(value) => setFormData(prev => ({ ...prev, payoutMethod: value }))}>
+                <SelectTrigger id="payoutMethod">
+                  <SelectValue placeholder="Select a payout method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Mpesa">M-Pesa</SelectItem>
+                  <SelectItem value="Bank">Bank Transfer</SelectItem>
+                  <SelectItem value="Airtel">Airtel Money</SelectItem>
+                  <SelectItem value="PayPal">PayPal</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="payoutDetails">Account / Phone Number</Label>
               <Input id="payoutDetails" name="payoutDetails" value={formData.payoutDetails} onChange={handleChange} placeholder="e.g. 0712345678" />
             </div>
             <div className="p-4 bg-blue-50 text-blue-700 rounded-lg text-xs">
-                Ensure your payout details are correct to avoid delays in processing your withdrawals.
+              Ensure your payout details are correct to avoid delays in processing your withdrawals.
             </div>
           </CardContent>
         </Card>

@@ -43,14 +43,9 @@ export default function SellerSidebar() {
     const handleLogout = async () => {
         setIsLoggingOut(true);
         try {
-            await signOut({
-                fetchOptions: {
-                    onSuccess: () => {
-                        toast.success("Logged out successfully");
-                        router.push("/login");
-                    },
-                },
-            });
+            await signOut();
+            toast.success("Logged out successfully");
+            router.push("/login");
         } catch (error) {
             toast.error("Failed to logout");
             setIsLoggingOut(false);
@@ -129,26 +124,25 @@ export default function SellerSidebar() {
                 <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
                     {links.map((link) => {
                         const Icon = link.icon;
-                        const isActive = link.exact 
-                            ? pathname === link.href 
+                        const isActive = link.exact
+                            ? pathname === link.href
                             : pathname.startsWith(link.href);
-                        
+
                         return (
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-300 group ${
-                                    isActive 
-                                    ? "bg-[#BFA47A] text-[#111009] shadow-lg shadow-[#BFA47A]/10" 
-                                    : "text-[#8A857D] hover:text-[#EDE8DF] hover:bg-white/5"
-                                }`}
+                                className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-300 group ${isActive
+                                        ? "bg-[#BFA47A] text-[#111009] shadow-lg shadow-[#BFA47A]/10"
+                                        : "text-[#8A857D] hover:text-[#EDE8DF] hover:bg-white/5"
+                                    }`}
                             >
                                 <div className="flex items-center gap-4">
                                     <Icon className={`w-5 h-5 transition-transform duration-500 ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
                                     <span className="text-[11px] font-bold uppercase tracking-[0.15em]">{link.label}</span>
                                 </div>
                                 {isActive && (
-                                    <motion.div 
+                                    <motion.div
                                         layoutId="activeIndicator"
                                         className="w-1 h-4 bg-[#111009] rounded-full"
                                     />
@@ -173,7 +167,7 @@ export default function SellerSidebar() {
                         <LogOut className="w-4 h-4" />
                         End Session
                     </button>
-                  
+
                 </div>
             </aside>
 

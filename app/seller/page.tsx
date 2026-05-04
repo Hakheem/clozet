@@ -38,56 +38,6 @@ export default async function SellerDashboardPage() {
 
       <SellerDashboard stats={stats} />
 
-      {/* Main Content Grid for secondary info */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        {/* Quick Actions */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-md">
-              <AlertCircle className="h-5 w-5" style={{ color: "#BFA47A" }} />
-              Seller Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Link
-              href="/seller/products/new"
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-[#E4E0D9]"
-            >
-              <Package className="h-4 w-4" style={{ color: "#BFA47A" }} />
-              <span className="text-sm font-medium" style={{ color: "#1C1A17" }}>
-                Add New Product
-              </span>
-            </Link>
-            <Link
-              href="/seller/products"
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-[#E4E0D9]"
-            >
-              <Package className="h-4 w-4" style={{ color: "#BFA47A" }} />
-              <span className="text-sm font-medium" style={{ color: "#1C1A17" }}>
-                Manage My Products
-              </span>
-            </Link>
-            <Link
-              href="/seller/orders"
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-[#E4E0D9]"
-            >
-              <ShoppingBag className="h-4 w-4" style={{ color: "#BFA47A" }} />
-              <span className="text-sm font-medium" style={{ color: "#1C1A17" }}>
-                Track My Orders
-              </span>
-            </Link>
-            <Link
-              href="/seller/earnings"
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-[#E4E0D9]"
-            >
-              <Store className="h-4 w-4" style={{ color: "#BFA47A" }} />
-              <span className="text-sm font-medium" style={{ color: "#1C1A17" }}>
-                Earnings & Payouts
-              </span>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

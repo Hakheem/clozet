@@ -48,21 +48,21 @@ export default function FeaturedGrid() {
     return (
         <Container>
             <section className="my-16">
-                <div className="flex flex-col md:flex-row items-center gap-4 justify-start md:justify-between mb-8">
+                <div className="flex flex-wrap items-center gap-4 justify-between mb-8">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
                             <Sparkles className="w-4 h-4 text-accent" />
                         </div>
                         <div>
                             <Title className="text-3xl md:text-4xl title tracking-tight">
-                                <span className="text-[#BFA47A]">Featured </span>Selection
+                                <span className="text-gold">Featured </span>Selection
                             </Title>
                         </div>
                     </div>
 
                     <Button
                         variant="outline"
-                        className="flex items-center gap-2 h-10 border-[#E4E0D9] text-primary hover:bg-[#F9F8F6] rounded-xl text-[10px] uppercase tracking-widest font-bold px-6 w-fit"
+                        className="hidden md:flex items-center gap-2 h-10 border-[#E4E0D9] text-primary hover:bg-[#F9F8F6] rounded-xl text-[10px] uppercase tracking-widest font-bold px-6 w-fit"
                     >
                         <Link href="/featured">View Collection</Link>
                         <ArrowRight className="w-3.5 h-3.5" />

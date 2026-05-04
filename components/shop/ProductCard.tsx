@@ -96,10 +96,10 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
     <TooltipProvider delay={200}>
       <div className="group block min-w-0">
         <div
-          className="relative overflow-hidden rounded-xl h-full flex flex-col bg-white border border-border transition-all duration-300 hover:shadow-xl hover:shadow-black/5"
+          className="relative overflow-hidden rounded-xl h-full flex flex-col bg-white border border-border transition-all duration-300 hover:shadow-lg hover:shadow-black/5" 
         >
           {/* Image Section */}
-          <div className="relative h-[230px] lg:h-[260px] w-full md:w-[280px] lg:w-full lg:max-w-[290px] overflow-hidden bg-[#EEE9E3]">
+          <div className="relative h-[230px] lg:h-[260px] w-full md:w-[280px] lg:w-full lg:max-w-[300px] overflow-hidden bg-[#EEE9E3]">
             <Link href={`/shop/${product.category.slug}/${product.slug}`}>
               {product.images.length > 0 ? (
                 <>
